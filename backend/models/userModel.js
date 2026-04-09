@@ -1,25 +1,17 @@
 const db = require('../config/db');
 
 // Create User
-const createUser = (name, email, password) => {
-    return new Promise((resolve, reject) => {
-        const query = 'INSERT INTO Users (name, email, password) VALUES (?, ?, ?)';
-        db.query(query, [name, email, password], (err, result) => {
-            if (err) return reject(err);
-            resolve(result);
-        });
-    });
+const createUser = async (name, email, password) => {
+    const query = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
+    const [result] = await db.query(query, [name, email, password]);
+    return result;
 };
 
 // Find User by Email
-const findUserByEmail = (email) => {
-    return new Promise((resolve, reject) => {
-        const query = 'SELECT * FROM Users WHERE email = ?';
-        db.query(query, [email], (err, result) => {
-            if (err) return reject(err);
-            resolve(result[0]);
-        });
-    });
+const findUserByEmail = async (email) => {
+    const query = 'SELECT * FROM users WHERE email = ?';
+    const [rows] = await db.query(query, [email]);
+    return rows[0];
 };
 
 module.exports = { createUser, findUserByEmail };

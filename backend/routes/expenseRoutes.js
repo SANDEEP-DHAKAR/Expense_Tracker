@@ -3,11 +3,22 @@ const router = express.Router();
 
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.get('/', authMiddleware, (req, res) => {
-  res.json({
-    success: true,
-    message: "Expense route working",
-  });
-});
+const {
+    create,
+    getAll,
+    remove,
+} = require('../controllers/expenseController');
+
+// 🔐 Apply auth middleware to all routes
+router.use(authMiddleware);
+
+// ➕ ADD EXPENSE
+router.post('/', create);
+
+// 📥 GET ALL EXPENSES
+router.get('/', getAll);
+
+// ❌ DELETE EXPENSE
+router.delete('/:id', remove);
 
 module.exports = router;

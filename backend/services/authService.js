@@ -2,6 +2,9 @@ const { createUser, findUserByEmail } = require('../models/userModel');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { generateToken } = require('../utils/jwt');
 
+// 🔥 IMPORT THIS
+const { createDefaultCategories } = require('./categoryService');
+
 // Signup Service
 const signupUser = async (name, email, password) => {
     const existingUser = await findUserByEmail(email);
@@ -14,7 +17,12 @@ const signupUser = async (name, email, password) => {
 
     const result = await createUser(name, email, hashedPassword);
 
-    return { id: result.insertId, name, email };
+    const userId = result.insertId;
+
+    // 💀 AUTO CREATE DEFAULT CATEGORIES
+    await createDefaultCategories(userId);
+
+    return { id: userId, name, email };
 };
 
 // Login Service

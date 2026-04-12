@@ -1,56 +1,142 @@
 const db = require('../config/db');
 
 // 🥇 Create Category
-exports.createCategory = (req, res) => {
-    const { user_id, name } = req.body;
+const createCategory = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name } = req.body;
 
-    const query = "INSERT INTO categories (user_id, name) VALUES (?, ?)";
-
-    db.query(query, [user_id, name], (err, result) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: err.message });
+        if (!name || name.trim() === '') {
+            throw new Error("Category name required");
         }
+
+        const query = `
+            INSERT INTO categories (user_id, name)
+            VALUES (?, ?)
+        `;
+
+        const [result] = await db.query(query, [userId, name]);
 
         res.json({
             success: true,
             message: "Category created successfully",
             id: result.insertId
         });
-    });
+
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
-// 🥈 Get Categories by User
-exports.getCategoriesByUser = (req, res) => {
-    const { userId } = req.params;
+// 🥈 Get Categories
+const getCategories = async (req, res) => {
+    try {
+        const userId = req.user.id;
 
-    const query = "SELECT * FROM categories WHERE user_id = ?";
+        const query = `
+            SELECT * FROM categories
+            WHERE user_id = ?
+            ORDER BY id DESC
+        `;
 
-    db.query(query, [userId], (err, results) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: err.message });
+        const [rows] = await db.query(query, [userId]);
+
+        res.json({
+            success: true,
+            count: rows.length,
+            data: rows
+        });
+
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// ✏️ UPDATE CATEGORY
+const updateCategory = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const id = req.params.id;
+        const { name } = req.body;
+
+        // ✅ Validation
+        if (!id) {
+            throw new Error("Category ID required");
+        }
+
+        if (!name || name.trim() === '') {
+            throw new Error("Category name required");
+        }
+
+        const query = `
+            UPDATE categories
+            SET name = ?
+            WHERE id = ? AND user_id = ?
+        `;
+
+        const [result] = await db.query(query, [name, id, userId]);
+
+        // ✅ Check ownership
+        if (result.affectedRows === 0) {
+            throw new Error("Category not found or unauthorized");
         }
 
         res.json({
             success: true,
-            data: results
+            message: "Category updated successfully"
         });
-    });
+
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
 };
 
-// 🥉 Delete Category
-exports.deleteCategory = (req, res) => {
-    const { id } = req.params;
+// 🥉 Delete Category (Secure)
+const deleteCategory = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const id = req.params.id;
 
-    const query = "DELETE FROM categories WHERE id = ?";
+        if (!id) {
+            throw new Error("Category ID required");
+        }
 
-    db.query(query, [id], (err) => {
-        if (err) {
-            return res.status(500).json({ success: false, message: err.message });
+        const query = `
+            DELETE FROM categories
+            WHERE id = ? AND user_id = ?
+        `;
+
+        const [result] = await db.query(query, [id, userId]);
+
+        if (result.affectedRows === 0) {
+            throw new Error("Category not found or unauthorized");
         }
 
         res.json({
             success: true,
             message: "Category deleted successfully"
         });
-    });
+
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+module.exports = {
+    createCategory,
+    getCategories,
+    updateCategory,
+    deleteCategory
 };

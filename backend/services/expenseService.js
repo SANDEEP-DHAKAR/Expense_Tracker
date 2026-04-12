@@ -2,6 +2,7 @@ const {
     createExpense,
     getExpenses,
     deleteExpense,
+    updateExpense
 } = require('../models/expenseModel');
 
 // ➕ ADD EXPENSE
@@ -43,6 +44,44 @@ const fetchExpenses = async (userId) => {
     };
 };
 
+// ✏️ UPDATE EXPENSE
+const editExpense = async (id, userId, data) => {
+    const { categoryId, amount, note, expenseDate } = data;
+
+    // ✅ Validation
+    if (!id) {
+        throw new Error('Expense ID required');
+    }
+
+    if (!amount || amount <= 0) {
+        throw new Error('Valid amount required');
+    }
+
+    if (!expenseDate) {
+        throw new Error('Expense date required');
+    }
+
+    // ✅ Update call
+    const result = await updateExpense(
+        id,
+        userId,
+        categoryId,
+        amount,
+        note || null,
+        expenseDate
+    );
+
+    // ✅ Check if updated
+    if (result.affectedRows === 0) {
+        throw new Error('Expense not found or unauthorized');
+    }
+
+    return {
+        success: true,
+        message: 'Expense updated successfully'
+    };
+};
+
 // ❌ DELETE EXPENSE
 const removeExpense = async (id, userId) => {
     if (!id) {
@@ -64,5 +103,6 @@ const removeExpense = async (id, userId) => {
 module.exports = {
     addExpense,
     fetchExpenses,
-    removeExpense
+    removeExpense,
+    editExpense
 };

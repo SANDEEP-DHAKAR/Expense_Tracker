@@ -1,56 +1,75 @@
-const db = require('../config/db');
+const {
+    getDashboardSummary,
+    getCategoryBreakdown,
+    getRecentExpenses,
+    getMonthlyData
+} = require('../services/dashboardService');
 
-// 🔥 Dashboard Summary API
-exports.getDashboard = (req, res) => {
-    const { userId } = req.params;
+// 🧾 Dashboard Controller
+const getDashboard = async (req, res) => {
+    try {
+        const userId = req.user.id;
 
-    const response = {};
+        const summary = await getDashboardSummary(userId);
+        const categoryData = await getCategoryBreakdown(userId);
+        const recent = await getRecentExpenses(userId);
+        const monthlyGraph = await getMonthlyData(userId);
 
-    // 🧮 Total Expense
-    const totalQuery = `
-        SELECT SUM(amount) AS total_expense
-        FROM expenses
-        WHERE user_id = ?
-    `;
-
-    // 📅 Monthly Expense
-    const monthlyQuery = `
-        SELECT SUM(amount) AS monthly_expense
-        FROM expenses
-        WHERE user_id = ?
-        AND MONTH(date) = MONTH(CURRENT_DATE())
-        AND YEAR(date) = YEAR(CURRENT_DATE())
-    `;
-
-    // 📊 Category-wise breakdown
-    const categoryQuery = `
-        SELECT c.name, SUM(e.amount) AS total
-        FROM expenses e
-        JOIN categories c ON e.category_id = c.id
-        WHERE e.user_id = ?
-        GROUP BY c.name
-    `;
-
-    db.query(totalQuery, [userId], (err, totalResult) => {
-        if (err) return res.status(500).json({ success: false, message: err.message });
-
-        response.total_expense = totalResult[0].total_expense || 0;
-
-        db.query(monthlyQuery, [userId], (err, monthlyResult) => {
-            if (err) return res.status(500).json({ success: false, message: err.message });
-
-            response.monthly_expense = monthlyResult[0].monthly_expense || 0;
-
-            db.query(categoryQuery, [userId], (err, categoryResult) => {
-                if (err) return res.status(500).json({ success: false, message: err.message });
-
-                response.category_breakdown = categoryResult;
-
-                res.json({
-                    success: true,
-                    data: response
-                });
-            });
+        res.json({
+            success: true,
+            summary: {
+                total_expense: Number(summary?.total_expense ?? 0),
+                monthly_expense: Number(summary?.monthly_expense ?? 0)
+            },
+            category_breakdown: categoryData.map(item => ({
+                name: item.name,
+                total: Number(item.total ?? 0)
+            })),
+            recent_transactions: recent.map(item => ({
+                id: item.id,
+                amount: Number(item.amount),
+                note: item.note,
+                date: item.expense_date,
+                category: item.category_name
+            })),
+            monthly_graph: monthlyGraph.map(item => ({
+                month: item.month,
+                total: Number(item.total ?? 0)
+            }))
         });
-    });
+
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// 📊 Monthly Graph Separate API
+const getMonthlyGraph = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const data = await getMonthlyData(userId);
+
+        res.json({
+            success: true,
+            data: data.map(item => ({
+                month: item.month,
+                total: Number(item.total ?? 0)
+            }))
+        });
+
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+module.exports = { 
+    getDashboard, 
+    getMonthlyGraph 
 };

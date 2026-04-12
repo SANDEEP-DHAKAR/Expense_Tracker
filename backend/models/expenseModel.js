@@ -31,6 +31,26 @@ const getExpenses = async (userId) => {
     return rows;
 };
 
+// ✏️ UPDATE EXPENSE (SECURE)
+const updateExpense = async (id, userId, categoryId, amount, note, expenseDate) => {
+    const query = `
+        UPDATE expenses
+        SET category_id = ?, amount = ?, note = ?, expense_date = ?
+        WHERE id = ? AND user_id = ?
+    `;
+
+    const [result] = await db.query(query, [
+        categoryId,
+        amount,
+        note,
+        expenseDate,
+        id,
+        userId
+    ]);
+
+    return result;
+};
+
 // ❌ DELETE EXPENSE (SECURE)
 const deleteExpense = async (id, userId) => {
     const query = `
@@ -46,5 +66,6 @@ const deleteExpense = async (id, userId) => {
 module.exports = {
     createExpense,
     getExpenses,
-    deleteExpense
+    deleteExpense,
+    updateExpense
 };

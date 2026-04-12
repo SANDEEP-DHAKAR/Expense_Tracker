@@ -57,8 +57,33 @@ const remove = async (req, res) => {
     }
 };
 
+// 🔥 Get expenses with category name
+exports.getExpensesWithCategory = (req, res) => {
+    const { userId } = req.params;
+
+    const query = `
+        SELECT 
+            e.*, 
+            c.name AS category_name
+        FROM expenses e
+        JOIN categories c ON e.category_id = c.id
+        WHERE e.user_id = ?
+    `;
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            return res.status(500).json({ success: false, message: err.message });
+        }
+
+        res.json({
+            success: true,
+            data: results
+        });
+    });
+};
+
 module.exports = {
     create,
     getAll,
-    remove
+    remove,
 };

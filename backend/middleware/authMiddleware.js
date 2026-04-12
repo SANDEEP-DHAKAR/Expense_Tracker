@@ -2,24 +2,27 @@ const jwt = require('jsonwebtoken');
 
 const authMiddleware = (req, res, next) => {
     try {
-        // 🔹 Token get from header
         const authHeader = req.headers.authorization;
 
-        console.log("HEADER:", authHeader); // 👈 DEBUG
-
+        // ❌ No header
         if (!authHeader) {
             return res.status(401).json({
                 success: false,
-                message: 'No token provided',
+                message: 'Authorization header missing',
             });
         }
 
-        // Format: Bearer TOKEN
+        // ✅ Check format: Bearer TOKEN
+        if (!authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token format',
+            });
+        }
+
         const token = authHeader.split(' ')[1];
 
-        console.log("TOKEN:", token); // 👈 DEBUG
-        console.log("SECRET:", process.env.JWT_SECRET); // 👈 DEBUG
-
+        // ❌ Token missing
         if (!token) {
             return res.status(401).json({
                 success: false,
@@ -27,21 +30,34 @@ const authMiddleware = (req, res, next) => {
             });
         }
 
-        // 🔹 Verify token
+        // 🔐 Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        console.log("DECODED:", decoded); // 👈 DEBUG
-
-        // 🔹 Attach user to request
+        // 🔥 Attach user
         req.user = decoded;
 
         next();
-    } catch (error) {
-        console.log("JWT ERROR:", error.message); // 👈 DEBUG
 
-        return res.status(401).json({
+    } catch (error) {
+
+        // 🔥 Specific error handling
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                success: false,
+                message: 'Token expired',
+            });
+        }
+
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token',
+            });
+        }
+
+        return res.status(500).json({
             success: false,
-            message: 'Invalid or expired token',
+            message: 'Server error',
         });
     }
 };

@@ -29,12 +29,12 @@ app.get('/test-db', async (req, res) => {
 // Routes (future me add karenge yahan pe)
 const authRoutes = require('./routes/authRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
-// const categoryRoutes = require('./routes/categoryRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 // Route Middleware
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
-// app.use('/api/categories', categoryRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // Error Handling Middeware (important)
 app.use((err, req, res, next) => {

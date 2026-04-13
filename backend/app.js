@@ -1,24 +1,22 @@
-require('dotenv').config();  // Load environment variables from .env file
+require('dotenv').config();
 
-const db = require('./config/db');  // Import the database connection pool (if needed for testing)
+const db = require('./config/db');
 
 const express = require("express");
 const cors = require('cors');
-const errorMiddleware = require('./middleware/errorMiddleware');  // Global error handling middleware
 
 const app = express();
 
-// Global Middleware
-app.use(cors());  // Enable CORS for all routes
-app.use(express.json());  // Parse JSON bodies
-app.use(errorMiddleware);  // Global error handling middleware
+// 🌍 Global Middleware
+app.use(cors());
+app.use(express.json());
 
-// Health Check Route
+// 🏥 Health Check
 app.get('/', (req, res) => {
     res.send('Expense Tracker API is running');
 });
 
-// DB Test Route
+// 🧪 DB Test
 app.get('/test-db', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT 1');
@@ -28,29 +26,29 @@ app.get('/test-db', async (req, res) => {
     }
 });
 
-// Routes (future me add karenge yahan pe)
+// 🚀 Routes
 const authRoutes = require('./routes/authRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 
-// Route Middleware
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/budgets', budgetRoutes);
 
-// Error Handling Middeware (important)
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
+// ❌ 404 Handler (BONUS PRO 💀)
+app.use((req, res) => {
+    res.status(404).json({
         success: false,
-        message: 'Something went wrong',
+        message: 'Route not found'
     });
 });
 
+// 🔥 Global Error Middleware (LAST)
+const errorMiddleware = require('./middleware/errorMiddleware');
+app.use(errorMiddleware);
+
 module.exports = app;
-
-

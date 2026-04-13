@@ -25,16 +25,17 @@ const create = async (req, res) => {
     }
 };
 
-// 📥 GET ALL EXPENSES
+// 📥 GET ALL EXPENSES (WITH FILTER)
 const getAll = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const result = await fetchExpenses(userId);
+        const result = await fetchExpenses(userId, req.query);
 
-        return res.status(200).json(result);
+        res.status(200).json(result);
+
     } catch (error) {
-        return res.status(400).json({
+        res.status(400).json({
             success: false,
             message: error.message
         });

@@ -4,10 +4,13 @@ const router = express.Router();
 const { setBudget, getBudget } = require('../controllers/budgetController');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// 🔐 Apply auth to all routes
+router.use(authMiddleware);
+
 // ➕ Set Budget
-router.post('/', authMiddleware, setBudget);
+router.post('/', setBudget);
 
 // 📊 Get Budget
-router.get('/', authMiddleware, getBudget);
+router.get('/', getBudget);
 
 module.exports = router;

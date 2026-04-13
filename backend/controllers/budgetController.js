@@ -34,7 +34,7 @@ const setBudget = async (req, res) => {
             message: "Budget set successfully",
             data: {
                 month,
-                monthly_limit
+                monthly_limit: Number(monthly_limit)
             }
         });
 
@@ -46,7 +46,7 @@ const setBudget = async (req, res) => {
     }
 };
 
-// 📥 GET BUDGET FOR A MONTH
+// 📥 GET BUDGET + STATUS (🔥 UPDATED)
 const getBudget = async (req, res) => {
     try {
         const user_id = req.user.id;
@@ -64,22 +64,42 @@ const getBudget = async (req, res) => {
             });
         }
 
-        const query = `
-            SELECT * FROM budgets
+        // 💰 Get Budget
+        const budgetQuery = `
+            SELECT monthly_limit 
+            FROM budgets
             WHERE user_id = ? AND month = ?
         `;
 
-        const [rows] = await db.query(query, [user_id, month]);
+        const [budgetRows] = await db.query(budgetQuery, [user_id, month]);
+
+        const budget = budgetRows[0]?.monthly_limit || 0;
+
+        // 💸 Get Total Expense
+        const expenseQuery = `
+            SELECT COALESCE(SUM(amount), 0) AS spent
+            FROM expenses
+            WHERE user_id = ?
+            AND DATE_FORMAT(expense_date, '%Y-%m') = ?
+        `;
+
+        const [expenseRows] = await db.query(expenseQuery, [user_id, month]);
+
+        const spent = expenseRows[0].spent;
+
+        // 🧮 Calculate
+        const remaining = budget - spent;
+        const status = remaining < 0 ? 'over' : 'safe';
 
         return res.json({
             success: true,
             month,
-            data: rows[0]
-                ? {
-                    ...rows[0],
-                    monthly_limit: Number(rows[0].monthly_limit) 
-                }
-                : null
+            data: {
+                budget: Number(budget),
+                spent: Number(spent),
+                remaining: Number(remaining),
+                status
+            }
         });
 
     } catch (error) {

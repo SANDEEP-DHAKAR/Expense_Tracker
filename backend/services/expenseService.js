@@ -80,14 +80,14 @@ const addExpense = async (userId, data) => {
     };
 };
 
-// 📥 GET EXPENSES
-const fetchExpenses = async (userId) => {
-    const data = await getExpenses(userId);
+// 📥 GET EXPENSES WITH FILTER
+const fetchExpenses = async (userId, query) => {
+
+    const result = await getExpenses(userId, query);
 
     return {
         success: true,
-        count: data.length,
-        data
+        ...result
     };
 };
 

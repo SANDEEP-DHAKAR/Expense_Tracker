@@ -1,3 +1,5 @@
+const db = require('../config/db');
+
 const {
     createExpense,
     getExpenses,
@@ -5,7 +7,7 @@ const {
     updateExpense
 } = require('../models/expenseModel');
 
-// ➕ ADD EXPENSE
+// ➕ ADD EXPENSE (FINAL)
 const addExpense = async (userId, data) => {
     const { categoryId, amount, note, expenseDate } = data;
 
@@ -18,7 +20,7 @@ const addExpense = async (userId, data) => {
         throw new Error('Expense date required');
     }
 
-    // ✅ Create
+    // ✅ Create Expense
     const result = await createExpense(
         userId,
         categoryId,
@@ -27,9 +29,54 @@ const addExpense = async (userId, data) => {
         expenseDate
     );
 
+    // 🔥 =========================
+    // 🔔 BUDGET CHECK START
+    // 🔥 =========================
+
+    const currentMonth = expenseDate.slice(0, 7); // "YYYY-MM"
+
+    const checkBudgetQuery = `
+        SELECT 
+            b.monthly_limit,
+            COALESCE(SUM(e.amount), 0) AS total_spent
+        FROM budgets b
+        LEFT JOIN expenses e 
+            ON b.user_id = e.user_id 
+            AND DATE_FORMAT(e.expense_date, '%Y-%m') = b.month
+        WHERE b.user_id = ? AND b.month = ?
+        GROUP BY b.monthly_limit
+    `;
+
+    const [rows] = await db.query(checkBudgetQuery, [userId, currentMonth]);
+
+    let budgetExceeded = false;
+    let budgetAvailable = false;
+    let budgetPercentage = 0;
+
+    if (rows.length > 0) {
+        budgetAvailable = true;
+
+        const { monthly_limit, total_spent } = rows[0];
+
+        if (monthly_limit > 0) {
+            budgetPercentage = (total_spent / monthly_limit) * 100;
+        }
+
+        if (total_spent > monthly_limit) {
+            budgetExceeded = true;
+        }
+    }
+
+    // 🔥 =========================
+    // 🔔 BUDGET CHECK END
+    // 🔥 =========================
+
     return {
         success: true,
-        id: result.insertId
+        id: result.insertId,
+        budgetExceeded,
+        budgetAvailable,
+        budgetPercentage: Math.min(budgetPercentage, 100)
     };
 };
 
@@ -61,7 +108,6 @@ const editExpense = async (id, userId, data) => {
         throw new Error('Expense date required');
     }
 
-    // ✅ Update call
     const result = await updateExpense(
         id,
         userId,
@@ -71,7 +117,6 @@ const editExpense = async (id, userId, data) => {
         expenseDate
     );
 
-    // ✅ Check if updated
     if (result.affectedRows === 0) {
         throw new Error('Expense not found or unauthorized');
     }

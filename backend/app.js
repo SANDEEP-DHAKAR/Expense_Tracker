@@ -33,12 +33,14 @@ const authRoutes = require('./routes/authRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const budgetRoutes = require('./routes/budgetRoutes');
 
 // Route Middleware
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/budgets', budgetRoutes);
 
 // Error Handling Middeware (important)
 app.use((err, req, res, next) => {

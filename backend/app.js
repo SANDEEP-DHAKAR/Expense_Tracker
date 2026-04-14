@@ -32,12 +32,14 @@ const expenseRoutes = require('./routes/expenseRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/budgets', budgetRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ❌ 404 Handler (BONUS PRO 💀)
 app.use((req, res) => {

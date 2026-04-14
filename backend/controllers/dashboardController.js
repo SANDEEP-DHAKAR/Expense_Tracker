@@ -1,5 +1,3 @@
-const db = require('../config/db');
-
 const {
     getDashboardSummary,
     getCategoryBreakdown,
@@ -7,55 +5,27 @@ const {
     getMonthlyData
 } = require('../services/dashboardService');
 
+const { getBudgetStatus } = require('../services/budgetService'); // 🔥 IMPORTANT
+
 // 🧾 Dashboard Controller
 const getDashboard = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const summary = await getDashboardSummary(userId);
-        const categoryData = await getCategoryBreakdown(userId);
-        const recent = await getRecentExpenses(userId);
-        const monthlyGraph = await getMonthlyData(userId);
-
-        const currentMonth = new Date().toISOString().slice(0, 7);
-
-        // 🔥 =========================
-        // 💰 BUDGET FETCH
-        // 🔥 =========================
-        const [budgetRows] = await db.query(
-            `SELECT monthly_limit FROM budgets WHERE user_id = ? AND month = ?`,
-            [userId, currentMonth]
-        );
-
-        let budget = 0;
-        let budgetAvailable = false;
-
-        if (budgetRows.length > 0) {
-            budget = Number(budgetRows[0].monthly_limit);
-            budgetAvailable = true;
-        }
-
-        // 🔥 =========================
-        // 📊 CALCULATIONS
-        // 🔥 =========================
-        const totalExpense = Number(summary?.monthly_expense ?? 0);
-
-        let remaining = budget - totalExpense;
-        let percentage = 0;
-
-        if (budget > 0) {
-            percentage = (totalExpense / budget) * 100;
-        }
-
-        let status = "safe";
-
-        if (percentage >= 100) {
-            status = "exceeded";
-        } else if (percentage >= 80) {
-            status = "warning";
-        }
-
-        // 🔥 =========================
+        // 🔥 Parallel calls (FAST 💀)
+        const [
+            summary,
+            categoryData,
+            recent,
+            monthlyGraph,
+            budgetStatus
+        ] = await Promise.all([
+            getDashboardSummary(userId),
+            getCategoryBreakdown(userId),
+            getRecentExpenses(userId),
+            getMonthlyData(userId),
+            getBudgetStatus(userId)
+        ]);
 
         res.json({
             success: true,
@@ -63,16 +33,16 @@ const getDashboard = async (req, res) => {
             // 📊 SUMMARY
             summary: {
                 total_expense: Number(summary?.total_expense ?? 0),
-                monthly_expense: totalExpense
+                monthly_expense: Number(summary?.monthly_expense ?? 0)
             },
 
-            // 📂 CATEGORY
+            // 📂 CATEGORY BREAKDOWN
             category_breakdown: categoryData.map(item => ({
                 name: item.name,
                 total: Number(item.total ?? 0)
             })),
 
-            // 🧾 RECENT
+            // 🧾 RECENT TRANSACTIONS
             recent_transactions: recent.map(item => ({
                 id: item.id,
                 amount: Number(item.amount),
@@ -81,20 +51,14 @@ const getDashboard = async (req, res) => {
                 category: item.category_name
             })),
 
-            // 📈 GRAPH
+            // 📈 MONTHLY GRAPH
             monthly_graph: monthlyGraph.map(item => ({
                 month: item.month,
                 total: Number(item.total ?? 0)
             })),
 
-            // 💰 NEW BUDGET DATA (🔥 IMPORTANT)
-            budget: {
-                amount: budget,
-                remaining,
-                percentage: Math.min(percentage, 100),
-                status, // safe | warning | exceeded
-                available: budgetAvailable
-            }
+            // 💰 BUDGET + ALERT 🚨
+            budget: budgetStatus
         });
 
     } catch (error) {
@@ -105,7 +69,7 @@ const getDashboard = async (req, res) => {
     }
 };
 
-// 📊 Monthly Graph Separate API
+// 📊 Separate Monthly Graph API
 const getMonthlyGraph = async (req, res) => {
     try {
         const userId = req.user.id;

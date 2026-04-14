@@ -1,0 +1,83 @@
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+
+export default function ExpenseChart({ expenses }) {
+  // 🔥 GROUP DATA
+  const grouped = {};
+
+  expenses.forEach((exp) => {
+    const key = exp.category_name || "Other";
+
+    if (!grouped[key]) {
+      grouped[key] = 0;
+    }
+
+    grouped[key] += Number(exp.amount);
+  });
+
+  const data = Object.keys(grouped).map((key) => ({
+    name: key,
+    value: grouped[key],
+  }));
+
+  // 🎨 COLORS (beautiful palette)
+  const COLORS = [
+    "#4F46E5",
+    "#22C55E",
+    "#F59E0B",
+    "#EF4444",
+    "#06B6D4",
+    "#A855F7",
+  ];
+
+  if (!data.length) {
+    return <p className="text-gray-500">No data to display</p>;
+  }
+
+  return (
+    <div className="mt-6 p-4 bg-white rounded-2xl shadow-lg">
+      <h2 className="font-bold text-lg mb-4 text-center">
+        📊 Expense Breakdown
+      </h2>
+
+      <div className="w-full h-[300px]">
+        <ResponsiveContainer>
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={100}
+              innerRadius={50} // 🔥 donut style
+              paddingAngle={3}
+            >
+              {data.map((entry, index) => (
+                <Cell
+                  key={index}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+
+            {/* Tooltip */}
+            <Tooltip
+              contentStyle={{
+                borderRadius: "10px",
+                border: "none",
+              }}
+            />
+
+            {/* Legend */}
+            <Legend verticalAlign="bottom" />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}

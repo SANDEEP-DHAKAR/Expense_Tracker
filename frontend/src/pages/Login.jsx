@@ -6,12 +6,19 @@ import { useNavigate } from "react-router-dom";
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const { login } = useContext(AuthContext);
+    const [loading, setLoading] = useState(false);
 
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleLogin = async () => {
+        if (!email || !password) {
+            return alert("Please fill all fields");
+        }
+
         try {
+            setLoading(true);
+
             const res = await loginUser({ email, password });
 
             // 🔐 Save user + token
@@ -21,33 +28,49 @@ export default function Login() {
             navigate("/");
         } catch (error) {
             alert(error.response?.data?.message || "Login failed");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="p-6 shadow-lg rounded-xl w-80">
-                <h2 className="text-xl font-bold mb-4">Login</h2>
+        <div className="flex justify-center items-center h-screen bg-gray-100">
+            <div className="p-6 shadow-xl rounded-2xl w-80 bg-white">
+                <h2 className="text-2xl font-bold mb-4 text-center">
+                    Welcome Back 👋
+                </h2>
 
                 <input
-                    className="border p-2 w-full mb-2"
+                    type="email"
+                    className="border p-2 w-full mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder="Email"
                     onChange={(e) => setEmail(e.target.value)}
                 />
 
                 <input
                     type="password"
-                    className="border p-2 w-full mb-2"
+                    className="border p-2 w-full mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder="Password"
                     onChange={(e) => setPassword(e.target.value)}
                 />
 
                 <button
                     onClick={handleLogin}
-                    className="bg-blue-500 text-white w-full p-2"
+                    disabled={loading}
+                    className="bg-blue-500 hover:bg-blue-600 text-white w-full p-2 rounded-lg transition"
                 >
-                    Login
+                    {loading ? "Logging in..." : "Login"}
                 </button>
+
+                <p className="text-sm mt-4 text-center">
+                    Don't have an account?{" "}
+                    <span
+                        onClick={() => navigate("/signup")}
+                        className="text-blue-500 cursor-pointer hover:underline"
+                    >
+                        Signup
+                    </span>
+                </p>
             </div>
         </div>
     );

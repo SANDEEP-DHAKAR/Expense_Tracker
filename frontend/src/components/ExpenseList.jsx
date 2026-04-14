@@ -4,28 +4,43 @@ import { useState } from "react";
 export default function ExpenseList({ expenses, refresh }) {
     const [editingId, setEditingId] = useState(null);
     const [editData, setEditData] = useState({ title: "", amount: "" });
+    const [loading, setLoading] = useState(false);
 
     const handleDelete = async (id) => {
-        await deleteExpense(id);
-        refresh();
+        try {
+            await deleteExpense(id);
+            refresh();
+        } catch (err) {
+            console.log("Delete Error:", err);
+        }
     };
 
     const startEdit = (exp) => {
         setEditingId(exp.id);
-        setEditData({ title: exp.title, amount: exp.amount });
+        setEditData({
+            title: exp.title,
+            amount: exp.amount.toString(), // 🔥 important fix
+        });
     };
 
     const handleUpdate = async () => {
         try {
             await updateExpense(editingId, {
-                title: editData.title,
-                amount: Number(editData.amount), 
+                amount: Number(editData.amount),
+
+                // 🔥 REQUIRED FIELDS (IMPORTANT)
+                expenseDate: new Date().toISOString().slice(0, 10),
+
+                // optional (safe fallback)
+                categoryId: 1,
+                note: editData.title,
             });
 
             setEditingId(null);
-            refresh(); // 🔁 data reload
+            await refresh();
+
         } catch (err) {
-            console.log(err);
+            console.log("Update Error:", err.response?.data || err.message);
         }
     };
 
@@ -56,9 +71,10 @@ export default function ExpenseList({ expenses, refresh }) {
 
                             <button
                                 onClick={handleUpdate}
+                                disabled={loading}
                                 className="bg-green-500 text-white px-2"
                             >
-                                Save
+                                {loading ? "Saving..." : "Save"}
                             </button>
                         </>
                     ) : (

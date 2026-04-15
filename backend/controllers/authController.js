@@ -20,7 +20,14 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body || {};
+
+        if (!email || !password) {
+            const error = new Error('Email and password are required');
+            error.status = 400;
+            throw error;
+        }
+
         const data = await loginUser(email, password);
 
         res.status(200).json({

@@ -11,7 +11,9 @@ export default function Login() {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const handleLogin = async () => {
+    const handleLogin = async (event) => {
+        event?.preventDefault();
+
         if (!email || !password) {
             return alert("Please fill all fields");
         }
@@ -40,27 +42,31 @@ export default function Login() {
                     Welcome Back 👋
                 </h2>
 
-                <input
-                    type="email"
-                    className="border p-2 w-full mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Email"
-                    onChange={(e) => setEmail(e.target.value)}
-                />
+                <form onSubmit={handleLogin}>
+                    <input
+                        type="email"
+                        className="border p-2 w-full mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
 
-                <input
-                    type="password"
-                    className="border p-2 w-full mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Password"
-                    onChange={(e) => setPassword(e.target.value)}
-                />
+                    <input
+                        type="password"
+                        className="border p-2 w-full mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
 
-                <button
-                    onClick={handleLogin}
-                    disabled={loading}
-                    className="bg-blue-500 hover:bg-blue-600 text-white w-full p-2 rounded-lg transition"
-                >
-                    {loading ? "Logging in..." : "Login"}
-                </button>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="bg-blue-500 hover:bg-blue-600 text-white w-full p-2 rounded-lg transition"
+                    >
+                        {loading ? "Logging in..." : "Login"}
+                    </button>
+                </form>
 
                 <p className="text-sm mt-4 text-center">
                     Don't have an account?{" "}

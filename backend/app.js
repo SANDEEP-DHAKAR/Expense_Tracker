@@ -10,6 +10,7 @@ const app = express();
 // 🌍 Global Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // 🏥 Health Check
 app.get('/', (req, res) => {
@@ -22,7 +23,9 @@ app.get('/test-db', async (req, res) => {
         const [rows] = await db.query('SELECT 1');
         res.json({ success: true, message: 'DB connected', rows });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('DB Test Error:', error);
+        const errorMessage = error?.message || error?.sqlMessage || String(error);
+        res.status(500).json({ success: false, error: errorMessage });
     }
 });
 

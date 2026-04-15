@@ -2,7 +2,14 @@ const { signupUser, loginUser, refreshAuth, logoutUser } = require('../services/
 
 const signup = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password } = req.body || {};
+
+        if (!name || !email || !password) {
+            const error = new Error('Name, email, and password are required');
+            error.status = 400;
+            throw error;
+        }
+
         const user = await signupUser(name, email, password);
 
         res.status(201).json({
@@ -11,9 +18,10 @@ const signup = async (req, res) => {
             user,
         });
     } catch (error) {
+        const message = error?.message || error?.sqlMessage || 'Signup failed';
         res.status(error.status || 400).json({
             success: false,
-            message: error.message,
+            message,
         });
     }
 };

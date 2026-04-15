@@ -1,12 +1,19 @@
 import api from "./axios";
 
 // 📥 Get all expenses
-export const getExpenses = () => api.get("/expenses");
+export const getExpenses = (params = {}) => api.get("/expenses", { params });
+
+// 📤 Export expenses
+export const exportExpenses = (params = {}) =>
+  api.get("/expenses/export", {
+    params,
+    responseType: "blob",
+  });
 
 // ➕ Add expense
 export const addExpense = (data) => api.post("/expenses", data);
 
-// ✏️ Update expense (NEW 🔥)
+// ✏️ Update expense
 export const updateExpense = (id, data) =>
   api.put(`/expenses/${id}`, data);
 

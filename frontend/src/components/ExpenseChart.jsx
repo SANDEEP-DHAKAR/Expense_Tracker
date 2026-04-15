@@ -41,12 +41,12 @@ export default function ExpenseChart({ expenses }) {
   }
 
   return (
-    <div className="mt-6 p-4 bg-white rounded-2xl shadow-lg">
-      <h2 className="font-bold text-lg mb-4 text-center">
+    <div className="mt-6 p-4 bg-white rounded-2xl shadow-lg dark:bg-slate-800">
+      <h2 className="font-bold text-lg mb-4 text-center text-slate-900 dark:text-slate-100">
         📊 Expense Breakdown
       </h2>
 
-      <div className="w-full h-[300px]">
+      <div className="w-full h-[320px] sm:h-[360px]">
         <ResponsiveContainer>
           <PieChart>
             <Pie
@@ -68,9 +68,12 @@ export default function ExpenseChart({ expenses }) {
             {/* Tooltip */}
             <Tooltip
               contentStyle={{
-                borderRadius: "10px",
+                borderRadius: "12px",
                 border: "none",
+                backgroundColor: "rgba(15, 23, 42, 0.96)",
+                color: "#ffffff",
               }}
+              itemStyle={{ color: "#ffffff" }}
             />
 
             {/* Legend */}

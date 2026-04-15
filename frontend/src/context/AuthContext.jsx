@@ -1,11 +1,11 @@
 import { createContext, useState, useEffect } from "react";
+import { logoutUser } from "../api/auth";
 
 export const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
-    // 🔥 LOAD USER ON REFRESH
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
 
@@ -14,14 +14,23 @@ const AuthProvider = ({ children }) => {
         }
     }, []);
 
-    // 🔐 LOGIN FUNCTION
     const login = (data) => {
         localStorage.setItem("user", JSON.stringify(data));
         setUser(data);
     };
 
-    // 🚪 LOGOUT
-    const logout = () => {
+    const logout = async () => {
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        const refreshToken = storedUser?.refreshToken;
+
+        if (refreshToken) {
+            try {
+                await logoutUser({ refreshToken });
+            } catch (error) {
+                console.warn("Logout failed", error);
+            }
+        }
+
         localStorage.removeItem("user");
         setUser(null);
     };

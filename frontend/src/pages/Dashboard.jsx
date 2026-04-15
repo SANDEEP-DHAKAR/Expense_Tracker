@@ -10,7 +10,7 @@ import AddExpense from "../components/AddExpense";
 import ExpenseList from "../components/ExpenseList";
 import ExpenseChart from "../components/ExpenseChart";
 import ExpenseBarChart from "../components/ExpenseBarChart";
-import MonthlyChart from "../components/MonthlyChart";
+import DailyChart from "../components/DailyChart";
 import BudgetProgress from "../components/BudgetProgress";
 import NotificationBell from "../components/NotificationBell";
 import NotificationsPanel from "../components/NotificationsPanel";
@@ -146,6 +146,19 @@ export default function Dashboard() {
         }));
     }, [dashboard.monthly_graph]);
 
+    const dailyData = useMemo(() => {
+        const grouped = expenses.reduce((acc, expense) => {
+            const date = expense.expense_date?.slice(0, 10);
+            if (!date) return acc;
+            acc[date] = (acc[date] || 0) + Number(expense.amount || 0);
+            return acc;
+        }, {});
+
+        return Object.entries(grouped)
+            .map(([date, amount]) => ({ date, amount }))
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+    }, [expenses]);
+
     const totalExpenses = useMemo(() => {
         return expenses.reduce((acc, item) => acc + Number(item?.amount || 0), 0);
     }, [expenses]);
@@ -264,8 +277,8 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                         <div className="lg:col-span-2 bg-white p-4 rounded-xl shadow dark:bg-slate-800">
                             <h2 className="font-bold mb-4">📈 Monthly Trend</h2>
-                            <div className="w-full h-[320px]">
-                                <ResponsiveContainer>
+                            <div className="w-full h-[320px] min-w-0 min-h-[320px]" style={{ minWidth: 0, minHeight: 0 }}>
+                                <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={0}>
                                     <LineChart data={chartData}>
                                         <CartesianGrid strokeDasharray="3 3" />
                                         <XAxis dataKey="month" />
@@ -342,7 +355,7 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
                         <ExpenseChart expenses={expenses} />
                         <ExpenseBarChart expenses={expenses} />
-                        <MonthlyChart expenses={expenses} />
+                        <DailyChart data={dailyData} />
                     </div>
 
                     <AddExpense refresh={fetchExpenses} />

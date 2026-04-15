@@ -1,11 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: "https://expense-tracker-backend-v2tv.onrender.com/api",
 });
 
 const refreshApi = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: "https://expense-tracker-backend-v2tv.onrender.com/api",
 });
 
 api.interceptors.request.use((config) => {

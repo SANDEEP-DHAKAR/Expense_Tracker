@@ -1,41 +1,45 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
 const {
     createExpense,
     getExpenses,
+    getExpensesForExport,
     deleteExpense,
-    updateExpense
-} = require('../models/expenseModel');
+    updateExpense,
+    getExpensesByCategory
+} = require("../models/expenseModel");
 
-// ➕ ADD EXPENSE (FINAL)
+const { createNotification } = require("./notificationService");
+
+// ➕ ADD EXPENSE (WITH BUDGET ALERTS)
 const addExpense = async (userId, data) => {
     const { categoryId, amount, note, expenseDate } = data;
 
-    // ✅ Validation
-    if (!amount || amount <= 0) {
-        throw new Error('Valid amount required');
+    // ✅ VALIDATION
+    if (!amount || Number(amount) <= 0) {
+        const error = new Error("Valid amount required");
+        error.status = 400;
+        throw error;
     }
 
     if (!expenseDate) {
-        throw new Error('Expense date required');
+        const error = new Error("Expense date required");
+        error.status = 400;
+        throw error;
     }
 
-    // ✅ Create Expense
     const result = await createExpense(
         userId,
-        categoryId,
+        categoryId || null,
         amount,
         note || null,
         expenseDate
     );
 
-    // 🔥 =========================
-    // 🔔 BUDGET CHECK START
-    // 🔥 =========================
+    const monthKey = expenseDate.slice(0, 7);
 
-    const currentMonth = expenseDate.slice(0, 7); // "YYYY-MM"
-
-    const checkBudgetQuery = `
+    const [rows] = await db.query(
+        `
         SELECT 
             b.monthly_limit,
             COALESCE(SUM(e.amount), 0) AS total_spent
@@ -45,109 +49,155 @@ const addExpense = async (userId, data) => {
             AND DATE_FORMAT(e.expense_date, '%Y-%m') = b.month
         WHERE b.user_id = ? AND b.month = ?
         GROUP BY b.monthly_limit
-    `;
+        `,
+        [userId, monthKey]
+    );
 
-    const [rows] = await db.query(checkBudgetQuery, [userId, currentMonth]);
-
-    let budgetExceeded = false;
-    let budgetAvailable = false;
+    let budget = 0;
+    let spent = 0;
     let budgetPercentage = 0;
+    let budgetExceeded = false;
 
     if (rows.length > 0) {
-        budgetAvailable = true;
-
         const { monthly_limit, total_spent } = rows[0];
+        budget = Number(monthly_limit);
+        spent = Number(total_spent);
+        budgetPercentage =
+            monthly_limit > 0 ? (spent / monthly_limit) * 100 : 0;
+        budgetExceeded = spent > monthly_limit;
 
-        if (monthly_limit > 0) {
-            budgetPercentage = (total_spent / monthly_limit) * 100;
-        }
+        const previousSpent = spent - Number(amount);
+        const thresholds = [0.8, 1.0];
 
-        if (total_spent > monthly_limit) {
-            budgetExceeded = true;
-        }
+        thresholds.forEach((threshold) => {
+            const previousCrossed = previousSpent >= monthly_limit * threshold;
+            const currentlyCrossed = spent >= monthly_limit * threshold;
+
+            if (!previousCrossed && currentlyCrossed) {
+                const message =
+                    threshold === 1.0
+                        ? "Budget exceeded 100% 🚨"
+                        : "Budget usage above 80% ⚠️";
+
+                createNotification(
+                    userId,
+                    threshold === 1.0 ? "danger" : "warning",
+                    message
+                ).catch(() => null);
+            }
+        });
     }
-
-    // 🔥 =========================
-    // 🔔 BUDGET CHECK END
-    // 🔥 =========================
 
     return {
         success: true,
         id: result.insertId,
-        budgetExceeded,
-        budgetAvailable,
-        budgetPercentage: Math.min(budgetPercentage, 100)
+        budget: {
+            budget,
+            spent,
+            budgetExceeded,
+            budgetPercentage: Number(Math.min(budgetPercentage, 100).toFixed(2))
+        }
     };
 };
 
-// 📥 GET EXPENSES WITH FILTER
+// 📥 GET EXPENSES (PAGINATION + FILTER READY)
 const fetchExpenses = async (userId, query) => {
-
     const result = await getExpenses(userId, query);
 
     return {
         success: true,
-        ...result
+        ...result,
     };
+};
+
+// � EXPORT EXPENSES
+const exportExpenses = async (userId, query) => {
+    const rows = await getExpensesForExport(userId, query);
+    return rows;
+};
+
+// �📊 GET EXPENSES BY CATEGORY
+const fetchExpensesByCategory = async (userId, categoryId) => {
+    if (!categoryId) {
+        const error = new Error("Category ID required");
+        error.status = 400;
+        throw error;
+    }
+
+    const rows = await getExpensesByCategory(userId, categoryId);
+    return rows;
 };
 
 // ✏️ UPDATE EXPENSE
 const editExpense = async (id, userId, data) => {
     const { categoryId, amount, note, expenseDate } = data;
 
-    // ✅ Validation
     if (!id) {
-        throw new Error('Expense ID required');
+        const error = new Error("Expense ID required");
+        error.status = 400;
+        throw error;
     }
 
-    if (!amount || amount <= 0) {
-        throw new Error('Valid amount required');
+    if (!amount || Number(amount) <= 0) {
+        const error = new Error("Valid amount required");
+        error.status = 400;
+        throw error;
     }
 
     if (!expenseDate) {
-        throw new Error('Expense date required');
+        const error = new Error("Expense date required");
+        error.status = 400;
+        throw error;
     }
 
     const result = await updateExpense(
         id,
         userId,
-        categoryId,
+        categoryId || null,
         amount,
         note || null,
         expenseDate
     );
 
     if (result.affectedRows === 0) {
-        throw new Error('Expense not found or unauthorized');
+        const error = new Error("Expense not found or unauthorized");
+        error.status = 404;
+        throw error;
     }
 
     return {
         success: true,
-        message: 'Expense updated successfully'
+        message: "Expense updated successfully",
     };
 };
 
 // ❌ DELETE EXPENSE
 const removeExpense = async (id, userId) => {
     if (!id) {
-        throw new Error('Expense ID required');
+        const error = new Error("Expense ID required");
+        error.status = 400;
+        throw error;
     }
 
     const result = await deleteExpense(id, userId);
 
     if (result.affectedRows === 0) {
-        throw new Error('Expense not found or unauthorized');
+        const error = new Error("Expense not found or unauthorized");
+        error.status = 404;
+        throw error;
     }
 
     return {
         success: true,
-        message: 'Expense deleted successfully'
+        message: "Expense deleted successfully",
     };
 };
 
 module.exports = {
     addExpense,
     fetchExpenses,
+    exportExpenses,
+    fetchExpensesByCategory,
     removeExpense,
-    editExpense
+    editExpense,
 };

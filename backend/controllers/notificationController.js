@@ -1,13 +1,12 @@
 const {
     getNotifications,
+    getUnreadCount,
     markAsRead
 } = require('../services/notificationService');
 
-// 📥 GET ALL
 const getAllNotifications = async (req, res) => {
     try {
         const userId = req.user.id;
-
         const data = await getNotifications(userId);
 
         res.json({
@@ -15,7 +14,6 @@ const getAllNotifications = async (req, res) => {
             count: data.length,
             data
         });
-
     } catch (error) {
         res.status(400).json({
             success: false,
@@ -24,7 +22,23 @@ const getAllNotifications = async (req, res) => {
     }
 };
 
-// ✅ MARK AS READ
+const getUnreadNotificationCount = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const count = await getUnreadCount(userId);
+
+        res.json({
+            success: true,
+            count
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 const markNotificationRead = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -36,7 +50,6 @@ const markNotificationRead = async (req, res) => {
             success: true,
             message: 'Notification marked as read'
         });
-
     } catch (error) {
         res.status(400).json({
             success: false,
@@ -47,5 +60,6 @@ const markNotificationRead = async (req, res) => {
 
 module.exports = {
     getAllNotifications,
+    getUnreadNotificationCount,
     markNotificationRead
 };

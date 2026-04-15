@@ -1,10 +1,8 @@
-const { signupUser, loginUser } = require('../services/authService');
+const { signupUser, loginUser, refreshAuth, logoutUser } = require('../services/authService');
 
-// Signup Controller
 const signup = async (req, res) => {
     try {
         const { name, email, password } = req.body;
-
         const user = await signupUser(name, email, password);
 
         res.status(201).json({
@@ -13,18 +11,16 @@ const signup = async (req, res) => {
             user,
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.status || 400).json({
             success: false,
             message: error.message,
         });
     }
 };
 
-// Login Controller
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         const data = await loginUser(email, password);
 
         res.status(200).json({
@@ -33,11 +29,45 @@ const login = async (req, res) => {
             ...data,
         });
     } catch (error) {
-        res.status(400).json({
+        res.status(error.status || 400).json({
             success: false,
             message: error.message,
         });
     }
 };
 
-module.exports = { signup, login };
+const refresh = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        const data = await refreshAuth(refreshToken);
+
+        res.status(200).json({
+            success: true,
+            ...data,
+        });
+    } catch (error) {
+        res.status(error.status || 400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const logout = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        const data = await logoutUser(refreshToken);
+
+        res.status(200).json({
+            success: true,
+            ...data,
+        });
+    } catch (error) {
+        res.status(error.status || 400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+module.exports = { signup, login, refresh, logout };

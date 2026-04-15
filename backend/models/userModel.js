@@ -14,4 +14,11 @@ const findUserByEmail = async (email) => {
     return rows[0];
 };
 
-module.exports = { createUser, findUserByEmail };
+// Find User by ID
+const findUserById = async (id) => {
+    const query = 'SELECT * FROM users WHERE id = ?';
+    const [rows] = await db.query(query, [id]);
+    return rows[0];
+};
+
+module.exports = { createUser, findUserByEmail, findUserById };

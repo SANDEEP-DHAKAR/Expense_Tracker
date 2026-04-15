@@ -8,7 +8,8 @@ const {
     getAll,
     remove,
     edit,
-    getExpensesByCategory
+    getByCategory,
+    exportExpenses
 } = require('../controllers/expenseController');
 
 // 🔐 Apply auth middleware to all routes
@@ -20,8 +21,11 @@ router.post('/', create);
 // 📥 GET ALL EXPENSES
 router.get('/', getAll);
 
+// 📤 Export expenses
+router.get('/export', exportExpenses);
+
 // 🔥 Get expenses with category name (👈 upar lao)
-router.get('/category/:categoryId', getExpensesByCategory);
+router.get('/category/:categoryId', getByCategory);
 
 // ✏️ UPDATE EXPENSE
 router.put('/:id', edit);

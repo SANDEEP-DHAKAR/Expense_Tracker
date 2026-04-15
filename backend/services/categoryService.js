@@ -1,20 +1,22 @@
-const db = require('../config/db');
+const {
+    insertCategory,
+    getCategories,
+    updateCategory,
+    deleteCategory,
+    insertDefaultCategories
+} = require('../models/categoryModel');
 
 // 🥇 CREATE CATEGORY
 const createCategoryService = async (userId, data) => {
     const { name } = data;
 
-    // ✅ Validation
     if (!name || name.trim() === '') {
-        throw new Error('Category name required');
+        const error = new Error('Category name required');
+        error.status = 400;
+        throw error;
     }
 
-    const query = `
-        INSERT INTO categories (user_id, name)
-        VALUES (?, ?)
-    `;
-
-    const [result] = await db.query(query, [userId, name]);
+    const result = await insertCategory(userId, name);
 
     return {
         success: true,
@@ -25,28 +27,13 @@ const createCategoryService = async (userId, data) => {
 
 // 🔥 DEFAULT CATEGORIES AUTO INSERT
 const createDefaultCategories = async (userId) => {
-    const defaultCategories = ["Food", "Travel", "Shopping", "Bills"];
-
-    const query = `
-        INSERT INTO categories (user_id, name)
-        VALUES ?
-    `;
-
-    const values = defaultCategories.map(name => [userId, name]);
-
-    await db.query(query, [values]);
+    const defaultCategories = ['Food', 'Travel', 'Shopping', 'Bills'];
+    await insertDefaultCategories(userId, defaultCategories);
 };
 
 // 🥈 GET ALL CATEGORIES (USER WISE)
 const getCategoriesService = async (userId) => {
-    const query = `
-        SELECT * FROM categories
-        WHERE user_id = ?
-        ORDER BY id DESC
-    `;
-
-    const [rows] = await db.query(query, [userId]);
-
+    const rows = await getCategories(userId);
     return {
         success: true,
         count: rows.length,
@@ -57,18 +44,16 @@ const getCategoriesService = async (userId) => {
 // 🥉 DELETE CATEGORY
 const deleteCategoryService = async (id, userId) => {
     if (!id) {
-        throw new Error('Category ID required');
+        const error = new Error('Category ID required');
+        error.status = 400;
+        throw error;
     }
 
-    const query = `
-        DELETE FROM categories
-        WHERE id = ? AND user_id = ?
-    `;
-
-    const [result] = await db.query(query, [id, userId]);
-
+    const result = await deleteCategory(id, userId);
     if (result.affectedRows === 0) {
-        throw new Error('Category not found or unauthorized');
+        const error = new Error('Category not found or unauthorized');
+        error.status = 404;
+        throw error;
     }
 
     return {
@@ -77,28 +62,27 @@ const deleteCategoryService = async (id, userId) => {
     };
 };
 
-// ✏️ UPDATE CATEGORY (BONUS - PRO LEVEL)
+// ✏️ UPDATE CATEGORY
 const updateCategoryService = async (id, userId, data) => {
     const { name } = data;
 
     if (!id) {
-        throw new Error('Category ID required');
+        const error = new Error('Category ID required');
+        error.status = 400;
+        throw error;
     }
 
     if (!name || name.trim() === '') {
-        throw new Error('Category name required');
+        const error = new Error('Category name required');
+        error.status = 400;
+        throw error;
     }
 
-    const query = `
-        UPDATE categories
-        SET name = ?
-        WHERE id = ? AND user_id = ?
-    `;
-
-    const [result] = await db.query(query, [name, id, userId]);
-
+    const result = await updateCategory(id, userId, name);
     if (result.affectedRows === 0) {
-        throw new Error('Category not found or unauthorized');
+        const error = new Error('Category not found or unauthorized');
+        error.status = 404;
+        throw error;
     }
 
     return {
@@ -111,5 +95,6 @@ module.exports = {
     createCategoryService,
     getCategoriesService,
     deleteCategoryService,
-    updateCategoryService
+    updateCategoryService,
+    createDefaultCategories
 };

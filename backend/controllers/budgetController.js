@@ -1,62 +1,36 @@
-const db = require('../config/db');
+const {
+    setBudget: saveBudget,
+    getBudgetStatus,
+    getBudgetHistory,
+    ensureMonthlyBudget
+} = require('../services/budgetService');
 
-// ➕ SET / UPDATE BUDGET
 const setBudget = async (req, res) => {
     try {
+        const userId = req.user.id;
         const { monthly_limit, month } = req.body;
-        const user_id = req.user.id;
 
-        // ✅ Validation
-        if (!monthly_limit || monthly_limit <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Valid monthly limit required'
-            });
-        }
-
-        if (!month) {
-            return res.status(400).json({
-                success: false,
-                message: 'Month is required (YYYY-MM)'
-            });
-        }
-
-        const query = `
-            INSERT INTO budgets (user_id, monthly_limit, month)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE monthly_limit = ?
-        `;
-
-        await db.query(query, [user_id, monthly_limit, month, monthly_limit]);
+        const result = await saveBudget(userId, monthly_limit, month);
 
         return res.status(200).json({
             success: true,
-            message: "Budget set successfully",
-            data: {
-                month,
-                monthly_limit: Number(monthly_limit)
-            }
+            message: 'Budget saved successfully 🚀',
+            data: result
         });
-
     } catch (error) {
-        return res.status(500).json({
+        return res.status(error.status || 500).json({
             success: false,
             message: error.message
         });
     }
 };
 
-// 📥 GET BUDGET + STATUS (🔥 UPDATED)
 const getBudget = async (req, res) => {
     try {
-        const user_id = req.user.id;
-
-        const month =
-            req.query.month ||
-            new Date().toISOString().slice(0, 7);
+        const userId = req.user.id;
+        const month = req.query.month || new Date().toISOString().slice(0, 7);
 
         const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
-
         if (!monthRegex.test(month)) {
             return res.status(400).json({
                 success: false,
@@ -64,46 +38,35 @@ const getBudget = async (req, res) => {
             });
         }
 
-        // 💰 Get Budget
-        const budgetQuery = `
-            SELECT monthly_limit 
-            FROM budgets
-            WHERE user_id = ? AND month = ?
-        `;
-
-        const [budgetRows] = await db.query(budgetQuery, [user_id, month]);
-
-        const budget = budgetRows[0]?.monthly_limit || 0;
-
-        // 💸 Get Total Expense
-        const expenseQuery = `
-            SELECT COALESCE(SUM(amount), 0) AS spent
-            FROM expenses
-            WHERE user_id = ?
-            AND DATE_FORMAT(expense_date, '%Y-%m') = ?
-        `;
-
-        const [expenseRows] = await db.query(expenseQuery, [user_id, month]);
-
-        const spent = expenseRows[0].spent;
-
-        // 🧮 Calculate
-        const remaining = budget - spent;
-        const status = remaining < 0 ? 'over' : 'safe';
+        await ensureMonthlyBudget(userId, month);
+        const data = await getBudgetStatus(userId, month);
 
         return res.json({
             success: true,
             month,
-            data: {
-                budget: Number(budget),
-                spent: Number(spent),
-                remaining: Number(remaining),
-                status
-            }
+            data
         });
-
     } catch (error) {
-        res.status(500).json({
+        return res.status(error.status || 500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+const getBudgetHistoryController = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { page, limit } = req.query;
+
+        const data = await getBudgetHistory(userId, page, limit);
+
+        return res.json({
+            success: true,
+            ...data
+        });
+    } catch (error) {
+        return res.status(error.status || 500).json({
             success: false,
             message: error.message
         });
@@ -112,5 +75,6 @@ const getBudget = async (req, res) => {
 
 module.exports = {
     setBudget,
-    getBudget
+    getBudget,
+    getBudgetHistory: getBudgetHistoryController
 };

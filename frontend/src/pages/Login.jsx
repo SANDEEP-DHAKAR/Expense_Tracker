@@ -29,7 +29,14 @@ export default function Login() {
             // 🔁 Redirect
             navigate("/");
         } catch (error) {
-            alert(error.response?.data?.message || "Login failed");
+            const errorData = error.response?.data;
+            const errorMessage =
+                errorData?.message ||
+                (typeof errorData === "string" ? errorData : null) ||
+                error.message ||
+                "Login failed";
+
+            alert(typeof errorMessage === "string" ? errorMessage : JSON.stringify(errorMessage));
         } finally {
             setLoading(false);
         }

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { getExpenses } from "../api/expenses";
 import ExpenseList from "../components/ExpenseList";
 import MobileNavbar from "../components/MobileNavbar";
-import MobileNavbar from "../components/MobileNavbar";
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);

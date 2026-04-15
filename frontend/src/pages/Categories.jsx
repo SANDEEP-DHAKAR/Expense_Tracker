@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { createCategory, deleteCategory, getCategories, updateCategory } from "../api/categories";
 import MobileNavbar from "../components/MobileNavbar";
-import MobileNavbar from "../components/MobileNavbar";
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);

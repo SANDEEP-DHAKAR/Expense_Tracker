@@ -11,8 +11,8 @@ const refreshApi = axios.create({
 api.interceptors.request.use((config) => {
     const user = JSON.parse(localStorage.getItem("user"));
 
-    if (user?.token) {
-        config.headers.Authorization = `Bearer ${user.token}`;
+    if (user?.accessToken) {
+        config.headers.Authorization = `Bearer ${user.accessToken}`;
     }
 
     return config;
@@ -43,16 +43,16 @@ api.interceptors.response.use(
                     refreshToken,
                 });
 
-                const { token, refreshToken: nextRefreshToken, user } = response.data;
+                const { accessToken, refreshToken: nextRefreshToken, user } = response.data;
                 const updatedAuth = {
                     ...storedUser,
-                    token,
+                    accessToken,
                     refreshToken: nextRefreshToken,
                     user: user || storedUser.user,
                 };
 
                 localStorage.setItem("user", JSON.stringify(updatedAuth));
-                originalRequest.headers.Authorization = `Bearer ${token}`;
+                originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                 return api(originalRequest);
             } catch (refreshError) {
                 localStorage.removeItem("user");

@@ -2,10 +2,16 @@ import axios from "axios";
 
 const api = axios.create({
     baseURL: "https://expense-tracker-backend-v2tv.onrender.com/api",
+    headers: {
+        "Content-Type": "application/json",
+    },
 });
 
 const refreshApi = axios.create({
     baseURL: "https://expense-tracker-backend-v2tv.onrender.com/api",
+    headers: {
+        "Content-Type": "application/json",
+    },
 });
 
 api.interceptors.request.use((config) => {

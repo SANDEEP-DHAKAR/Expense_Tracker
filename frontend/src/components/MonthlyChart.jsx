@@ -30,8 +30,8 @@ export default function MonthlyChart({ expenses }) {
     <div className="mt-6 p-4 bg-white rounded-2xl shadow-lg dark:bg-slate-800">
       <h2 className="font-bold mb-4 text-center text-slate-900 dark:text-slate-100">📈 Monthly Trend</h2>
 
-      <div className="w-full h-[320px] sm:h-[360px]">
-        <ResponsiveContainer>
+      <div className="w-full h-[320px] sm:h-[360px] min-w-0 min-h-[320px]" style={{ minWidth: 0, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={0}>
           <LineChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />

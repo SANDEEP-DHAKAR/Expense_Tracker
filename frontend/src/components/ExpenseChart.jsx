@@ -41,13 +41,13 @@ export default function ExpenseChart({ expenses }) {
   }
 
   return (
-    <div className="mt-6 p-4 bg-white rounded-2xl shadow-lg dark:bg-slate-800">
+    <div className="mt-6 p-4 bg-white rounded-2xl shadow-lg dark:bg-slate-800 min-w-0">
       <h2 className="font-bold text-lg mb-4 text-center text-slate-900 dark:text-slate-100">
         📊 Expense Breakdown
       </h2>
 
-      <div className="w-full h-[320px] sm:h-[360px]">
-        <ResponsiveContainer>
+      <div className="w-full h-[320px] sm:h-[360px] min-h-[320px] min-w-0" style={{ minWidth: 0, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height={320} minWidth={0} minHeight={0}>
           <PieChart>
             <Pie
               data={data}

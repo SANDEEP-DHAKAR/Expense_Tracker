@@ -25,31 +25,36 @@ const loginUser = async (email, password) => {
     const user = await findUserByEmail(email);
 
     if (!user) {
-        const error = new Error('User not found');
+        const error = new Error("User not found");
         error.status = 404;
         throw error;
     }
 
     const isMatch = await comparePassword(password, user.password);
+
     if (!isMatch) {
-        const error = new Error('Invalid credentials');
+        const error = new Error("Invalid credentials");
         error.status = 401;
         throw error;
     }
 
-    const token = generateAccessToken(user);
+    const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    const expiresAt = new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000
+    );
+
     await saveRefreshToken(user.id, refreshToken, expiresAt);
 
     return {
-        token,
+        accessToken,
         refreshToken,
         user: {
             id: user.id,
             name: user.name,
             email: user.email,
-        }
+        },
     };
 };
 
@@ -81,7 +86,7 @@ const refreshAuth = async (refreshToken) => {
     await saveRefreshToken(user.id, newRefreshToken, expiresAt);
 
     return {
-        token: newAccessToken,
+        accessToken: newAccessToken,
         refreshToken: newRefreshToken,
         user: {
             id: user.id,

@@ -6,7 +6,7 @@ export default function ProtectedRoute({ children }) {
     const { user } = useContext(AuthContext);
 
     // 🔥 WAIT UNTIL USER LOADS
-    if (user === null) {
+    if (user === null || user === undefined) {
         return <div>Loading...</div>;
     }
 

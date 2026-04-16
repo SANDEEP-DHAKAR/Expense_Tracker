@@ -4,7 +4,7 @@ import { logoutUser } from "../api/auth";
 export const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(undefined);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");

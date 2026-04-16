@@ -73,10 +73,23 @@ const edit = async (req, res) => {
         const userId = req.user.id;
         const expenseId = req.params.id;
 
-        const result = await editExpense(expenseId, userId, req.body);
+        console.log("EDIT REQ:", {
+            expenseId,
+            userId,
+            body: req.body
+        });
 
-        return res.status(200).json(result);
+        const result = await editExpense(userId, expenseId, req.body);
+
+        return res.status(200).json({
+            success: true,
+            message: "Expense updated successfully",
+            data: result
+        });
+
     } catch (error) {
+        console.log("EDIT ERROR:", error);
+
         return res.status(error.status || 400).json({
             success: false,
             message: error.message

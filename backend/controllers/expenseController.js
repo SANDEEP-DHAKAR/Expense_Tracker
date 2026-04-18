@@ -79,7 +79,7 @@ const edit = async (req, res) => {
             body: req.body
         });
 
-        const result = await editExpense(userId, expenseId, req.body);
+        const result = await editExpense(expenseId, userId, req.body);
 
         return res.status(200).json({
             success: true,

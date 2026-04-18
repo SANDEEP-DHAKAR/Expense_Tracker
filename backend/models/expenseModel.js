@@ -169,20 +169,38 @@ const getExpensesByCategory = async (userId, categoryId) => {
 
 // ✏️ UPDATE EXPENSE
 const updateExpense = async (id, userId, categoryId, amount, note, expenseDate) => {
-    const query = `
-        UPDATE expenses
-        SET category_id = ?, amount = ?, note = ?, expense_date = ?
-        WHERE id = ? AND user_id = ?
-    `;
+    let query = `UPDATE expenses SET `;
+    const params = [];
+    const updates = [];
 
-    const [result] = await db.query(query, [
-        categoryId,
-        amount,
-        note,
-        expenseDate,
-        id,
-        userId
-    ]);
+    if (categoryId !== undefined) {
+        updates.push(`category_id = ?`);
+        params.push(categoryId);
+    }
+
+    if (amount !== undefined) {
+        updates.push(`amount = ?`);
+        params.push(amount);
+    }
+
+    if (note !== undefined) {
+        updates.push(`note = ?`);
+        params.push(note);
+    }
+
+    if (expenseDate !== undefined) {
+        updates.push(`expense_date = ?`);
+        params.push(expenseDate);
+    }
+
+    if (updates.length === 0) {
+        throw new Error("No fields to update");
+    }
+
+    query += updates.join(', ') + ` WHERE id = ? AND user_id = ?`;
+    params.push(id, userId);
+
+    const [result] = await db.query(query, params);
 
     return result;
 };

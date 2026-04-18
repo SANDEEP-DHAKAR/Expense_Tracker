@@ -62,8 +62,8 @@ export default function ExpenseList({ expenses = [], refresh }) {
             console.log("PAYLOAD SENT:", payload);
 
             // 🚨 HARD VALIDATION (IMPORTANT)
-            if (!payload.note || isNaN(payload.amount) || !payload.expenseDate) {
-                alert("Note, amount, and date are required ❌");
+            if (isNaN(payload.amount) || !payload.expenseDate) {
+                alert("Amount and date are required ❌");
                 return;
             }
 

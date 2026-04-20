@@ -1,63 +1,66 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
-        // ❌ No header
+        // ❌ No Authorization header
         if (!authHeader) {
             return res.status(401).json({
                 success: false,
-                message: 'Authorization header missing',
+                message: "Authorization header missing",
             });
         }
 
-        // ✅ Check format: Bearer TOKEN
-        if (!authHeader.startsWith('Bearer ')) {
+        // ❌ Invalid format
+        if (!authHeader.startsWith("Bearer ")) {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid token format',
+                message: "Invalid token format",
             });
         }
 
-        const token = authHeader.split(' ')[1];
+        // ✅ Extract token
+        const token = authHeader.split(" ")[1];
 
-        // ❌ Token missing
         if (!token) {
             return res.status(401).json({
                 success: false,
-                message: 'Token missing',
+                message: "Token missing",
             });
         }
 
         // 🔐 Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        // 🔥 Attach user
+        // 🔥 Attach user (IMPORTANT: should contain id, email, role)
         req.user = decoded;
 
         next();
 
     } catch (error) {
+        console.log("Auth Error:", error.message);
 
-        // 🔥 Specific error handling
-        if (error.name === 'TokenExpiredError') {
+        // ❌ Token expired
+        if (error.name === "TokenExpiredError") {
             return res.status(401).json({
                 success: false,
-                message: 'Token expired',
+                message: "Token expired",
             });
         }
 
-        if (error.name === 'JsonWebTokenError') {
+        // ❌ Invalid token
+        if (error.name === "JsonWebTokenError") {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid token',
+                message: "Invalid token",
             });
         }
 
+        // ❌ Unknown error
         return res.status(500).json({
             success: false,
-            message: 'Server error',
+            message: "Server error",
         });
     }
 };

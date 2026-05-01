@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { loginUser } from "../api/auth";
 import { AuthContext } from "../context/AuthContextValue";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function Login() {
     const [email, setEmail] = useState("");
@@ -15,7 +16,8 @@ export default function Login() {
         event?.preventDefault();
 
         if (!email || !password) {
-            return alert("Please fill all fields");
+            toast.error("Please fill all fields");
+            return;
         }
 
         try {
@@ -36,7 +38,7 @@ export default function Login() {
                 error.message ||
                 "Login failed";
 
-            alert(typeof errorMessage === "string" ? errorMessage : JSON.stringify(errorMessage));
+            toast.error(typeof errorMessage === "string" ? errorMessage : JSON.stringify(errorMessage));
         } finally {
             setLoading(false);
         }

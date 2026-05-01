@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { signupUser } from "../api/auth";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function Signup() {
   const [name, setName] = useState("");
@@ -13,12 +14,12 @@ export default function Signup() {
     try {
       await signupUser({ name, email, password });
 
-      alert("Signup successful");
+      toast.success("Signup successful");
 
       // 🔁 Login page pe bhej
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Error");
+      toast.error(err.response?.data?.message || "Error");
     }
   };
 

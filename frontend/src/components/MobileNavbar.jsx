@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
-import { ThemeContext } from "../context/ThemeContext";
+import { AuthContext } from "../context/AuthContextValue";
+import { ThemeContext } from "../context/ThemeContextValue";
 
 export default function MobileNavbar() {
   const navigate = useNavigate();

@@ -1,17 +1,13 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Layout from "../components/Layout";
+import api from "../api/client";
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/admin/dashboard", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+    api
+      .get("/admin/dashboard")
       .then((res) => {
         console.log(res.data);
         setData(res.data.data);

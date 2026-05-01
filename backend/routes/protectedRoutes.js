@@ -1,7 +1,7 @@
 // routes/protectedRoutes.js
 const express = require("express");
 const router = express.Router();
-const authMiddleware = require("../middlewares/authMiddleware");
+const authMiddleware = require("../middleware/authMiddleware");
 
 router.get("/dashboard", authMiddleware, (req, res) => {
     res.json({

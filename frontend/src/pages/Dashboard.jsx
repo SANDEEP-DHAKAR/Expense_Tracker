@@ -365,7 +365,7 @@ export default function Dashboard() {
                     </div>
                     <div className="bg-white p-5 rounded-3xl shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
                         <h3 className="text-sm text-gray-500 dark:text-slate-400">Total Spend</h3>
-                        <p className="text-3xl font-bold text-slate-900 dark:text-white">₹{dashboard.summary.total_expense}</p>
+                        <p className="text-3xl font-bold text-slate-900 dark:text-white">₹{totalExpenses}</p>
                     </div>
                     <div className="bg-white p-5 rounded-3xl shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
                         <h3 className="text-sm text-gray-500 dark:text-slate-400">Tracked Expenses</h3>

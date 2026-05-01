@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
-import { ThemeContext } from "../context/ThemeContext";
+import { AuthContext } from "../context/AuthContextValue";
+import { ThemeContext } from "../context/ThemeContextValue";
 
 export default function Sidebar() {
     const navigate = useNavigate();

@@ -3,12 +3,13 @@ const router = express.Router();
 
 const { setBudget, getBudget, getBudgetHistory } = require('../controllers/budgetController');
 const authMiddleware = require('../middleware/authMiddleware');
+const { validateBudgetBody } = require("../middleware/validateRequest");
 
 // 🔐 Apply auth to all routes
 router.use(authMiddleware);
 
 // ➕ Set Budget
-router.post('/', setBudget);
+router.post('/', validateBudgetBody, setBudget);
 
 // 📊 Get Budget
 router.get('/', getBudget);

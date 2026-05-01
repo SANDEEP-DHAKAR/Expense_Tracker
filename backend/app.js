@@ -4,9 +4,12 @@ const db = require('./config/db');
 
 const express = require("express");
 const cors = require('cors');
+const helmet = require("helmet");
+const { apiLimiter } = require("./middleware/rateLimiters");
 
 const app = express();
 app.disable("x-powered-by");
+app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
     .split(",")
@@ -33,14 +36,12 @@ app.use(cors({
     },
     credentials: true,
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use((req, res, next) => {
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-Frame-Options", "DENY");
-    res.setHeader("Referrer-Policy", "same-origin");
-    next();
-});
+app.use(helmet({
+    contentSecurityPolicy: false,
+}));
+app.use(express.json({ limit: "200kb" }));
+app.use(express.urlencoded({ extended: true, limit: "200kb" }));
+app.use("/api", apiLimiter);
 
 // 🏥 Health Check
 app.get('/', (req, res) => {

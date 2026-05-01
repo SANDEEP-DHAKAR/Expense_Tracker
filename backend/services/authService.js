@@ -30,12 +30,6 @@ const loginUser = async (email, password) => {
         throw error;
     }
 
-      // 🔥 DEBUG START
-    console.log("ENTERED:", `"${password}"`);
-    console.log("LENGTH:", password.length);
-    console.log("HASH FROM DB:", user.password);
-    // 🔥 DEBUG END
-
     const isMatch = await comparePassword(password, user.password);
 
     if (!isMatch) {
@@ -60,6 +54,7 @@ const loginUser = async (email, password) => {
             id: user.id,
             name: user.name,
             email: user.email,
+            role: user.role || "user",
         },
     };
 };
@@ -99,7 +94,8 @@ const refreshAuth = async (refreshToken) => {
         user: {
             id: user.id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            role: user.role || "user",
         }
     };
 };

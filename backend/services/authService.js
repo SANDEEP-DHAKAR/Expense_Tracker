@@ -30,6 +30,12 @@ const loginUser = async (email, password) => {
         throw error;
     }
 
+      // 🔥 DEBUG START
+    console.log("ENTERED:", `"${password}"`);
+    console.log("LENGTH:", password.length);
+    console.log("HASH FROM DB:", user.password);
+    // 🔥 DEBUG END
+
     const isMatch = await comparePassword(password, user.password);
 
     if (!isMatch) {
@@ -78,6 +84,8 @@ const refreshAuth = async (refreshToken) => {
         error.status = 404;
         throw error;
     }
+
+
 
     await revokeRefreshToken(refreshToken);
     const newAccessToken = generateAccessToken(user);

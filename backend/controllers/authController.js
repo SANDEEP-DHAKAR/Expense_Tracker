@@ -1,6 +1,4 @@
-const { signupUser, refreshAuth, logoutUser } = require('../services/authService');
-const jwt = require("jsonwebtoken");
-const db = require("../config/db");
+const { signupUser, loginUser, refreshAuth, logoutUser } = require('../services/authService');
 
 // ✅ SIGNUP
 const signup = async (req, res) => {
@@ -23,68 +21,38 @@ const signup = async (req, res) => {
         });
 
     } catch (error) {
-        const message = error?.message || error?.sqlMessage || 'Signup failed';
         res.status(error.status || 400).json({
             success: false,
-            message,
+            message: error.message || 'Signup failed',
         });
     }
 };
 
-// ✅ LOGIN (FIXED)
+// ✅ LOGIN (🔥 FINAL FIX)
 const login = async (req, res) => {
-    const { email, password } = req.body;
-
     try {
-        const [rows] = await db.query(
-            "SELECT * FROM users WHERE email = ?",
-            [email]
-        );
+        const { email, password } = req.body;
 
-        const user = rows[0];
-
-        if (!user) {
-            return res.status(404).json({
+        if (!email || !password) {
+            return res.status(400).json({
                 success: false,
-                message: "User not found"
+                message: "Email and password are required"
             });
         }
 
-        if (user.password !== password) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid password"
-            });
-        }
-
-        // 🔥 FINAL TOKEN
-        const accessToken = jwt.sign(
-            {
-                id: user.id,
-                email: user.email,
-                role: user.role   // 👈 MUST
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-        );
+        // 🔥 SERVICE CALL (NO manual DB / NO manual bcrypt)
+        const data = await loginUser(email, password);
 
         res.json({
             success: true,
             message: "Login successful",
-            accessToken,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
+            ...data
         });
 
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({
+    } catch (error) {
+        res.status(error.status || 500).json({
             success: false,
-            message: "Server error"
+            message: error.message || "Login failed"
         });
     }
 };
@@ -93,6 +61,7 @@ const login = async (req, res) => {
 const refresh = async (req, res) => {
     try {
         const { refreshToken } = req.body;
+
         const data = await refreshAuth(refreshToken);
 
         res.status(200).json({
@@ -112,6 +81,7 @@ const refresh = async (req, res) => {
 const logout = async (req, res) => {
     try {
         const { refreshToken } = req.body;
+
         const data = await logoutUser(refreshToken);
 
         res.status(200).json({
@@ -127,5 +97,5 @@ const logout = async (req, res) => {
     }
 };
 
-// ✅ FINAL EXPORT (IMPORTANT FIX)
+// ✅ EXPORT
 module.exports = { signup, login, refresh, logout };

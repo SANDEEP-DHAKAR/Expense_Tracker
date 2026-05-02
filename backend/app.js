@@ -27,12 +27,21 @@ const corsOrigins = allowedOrigins.length > 0 ? allowedOrigins : defaultOrigins;
 
 // 🌍 Global Middleware
 app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || corsOrigins.includes(origin)) {
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+
+        const normalizedOrigin = origin.replace(/\/$/, "");
+
+        const isAllowed = corsOrigins.some(o => {
+            return normalizedOrigin === o.replace(/\/$/, "");
+        });
+
+        if (isAllowed) {
             return callback(null, true);
         }
 
-        return callback(new Error("CORS origin not allowed"), false);
+        console.log("Blocked CORS origin:", origin);
+        return callback(null, false); // ⚠️ don't throw error
     },
     credentials: true,
 }));

@@ -21,7 +21,6 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
 // ✅ CORS (FINAL FIX)
 app.use(cors({
   origin: function (origin, callback) {
-    // Postman / mobile apps / server requests
     if (!origin) return callback(null, true);
 
     const normalized = origin.replace(/\/$/, "");
@@ -36,9 +35,6 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true
 }));
-
-// ✅ Preflight (VERY IMPORTANT)
-app.options("*", cors());
 
 // 🔐 Security + parsers
 app.use(helmet({ contentSecurityPolicy: false }));

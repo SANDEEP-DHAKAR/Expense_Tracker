@@ -10,18 +10,28 @@ export default function Signup() {
 
   const navigate = useNavigate();
 
-  const handleSignup = async () => {
-    try {
-      await signupUser({ name, email, password });
+const handleSignup = async () => {
+  try {
+    const res = await signupUser({ name, email, password });
+    const data = res.data;
 
-      toast.success("Signup successful");
+    toast.success("Signup successful");
 
-      // 🔁 Login page pe bhej
-      navigate("/login");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Error");
-    }
-  };
+    // 🔥 ONE OBJECT ONLY (axios compatible)
+    const authData = {
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+      user: data.user,
+    };
+
+    localStorage.setItem("user", JSON.stringify(authData));
+
+    navigate("/dashboard");
+
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Signup failed");
+  }
+};
 
   return (
     <div className="flex justify-center items-center h-screen">
@@ -31,12 +41,14 @@ export default function Signup() {
         <input
           className="border p-2 w-full mb-2"
           placeholder="Name"
+          value={name}
           onChange={(e) => setName(e.target.value)}
         />
 
         <input
           className="border p-2 w-full mb-2"
           placeholder="Email"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
@@ -44,20 +56,22 @@ export default function Signup() {
           type="password"
           className="border p-2 w-full mb-2"
           placeholder="Password"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
         <button
           onClick={handleSignup}
-          className="bg-green-500 text-white w-full p-2 rounded-lg transition"
+          className="bg-green-500 hover:bg-green-600 text-white w-full p-2 rounded-lg transition"
         >
           Signup
         </button>
+
         <p className="text-sm mt-2">
           Already have an account?{" "}
           <span
             onClick={() => navigate("/login")}
-            className="text-blue-500 cursor-pointer "
+            className="text-blue-500 cursor-pointer"
           >
             Login
           </span>

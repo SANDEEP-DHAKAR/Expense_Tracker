@@ -4,6 +4,7 @@ const { generateAccessToken, generateRefreshToken } = require('../utils/jwt');
 const { saveRefreshToken, findRefreshToken, revokeRefreshToken } = require('../models/tokenModel');
 const { createDefaultCategories } = require('./categoryService');
 
+// ✅ SIGNUP (AUTO LOGIN)
 const signupUser = async (name, email, password) => {
     const existingUser = await findUserByEmail(email);
 
@@ -14,19 +15,42 @@ const signupUser = async (name, email, password) => {
     }
 
     const hashedPassword = await hashPassword(password);
+
     const result = await createUser(name, email, hashedPassword);
     const userId = result.insertId;
+
     await createDefaultCategories(userId);
 
-    return { id: userId, name, email };
+    const user = {
+        id: userId,
+        name,
+        email,
+        role: "user"
+    };
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken();
+
+    const expiresAt = new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000
+    );
+
+    await saveRefreshToken(userId, refreshToken, expiresAt);
+
+    return {
+        accessToken,
+        refreshToken,
+        user
+    };
 };
 
+// ✅ LOGIN
 const loginUser = async (email, password) => {
     const user = await findUserByEmail(email);
 
     if (!user) {
-        const error = new Error("User not found");
-        error.status = 404;
+        const error = new Error("Invalid credentials");
+        error.status = 401;
         throw error;
     }
 
@@ -59,6 +83,7 @@ const loginUser = async (email, password) => {
     };
 };
 
+// ✅ REFRESH (WITH EXPIRY CHECK + ROTATION)
 const refreshAuth = async (refreshToken) => {
     if (!refreshToken) {
         const error = new Error('Refresh token required');
@@ -67,25 +92,40 @@ const refreshAuth = async (refreshToken) => {
     }
 
     const tokenRecord = await findRefreshToken(refreshToken);
+
     if (!tokenRecord) {
         const error = new Error('Invalid or expired refresh token');
         error.status = 401;
         throw error;
     }
 
+    // 🔥 expiry check
+    if (new Date(tokenRecord.expires_at) < new Date()) {
+        await revokeRefreshToken(refreshToken);
+
+        const error = new Error("Refresh token expired");
+        error.status = 401;
+        throw error;
+    }
+
     const user = await findUserById(tokenRecord.user_id);
+
     if (!user) {
         const error = new Error('User not found');
         error.status = 404;
         throw error;
     }
 
-
-
+    // 🔥 rotate token
     await revokeRefreshToken(refreshToken);
+
     const newAccessToken = generateAccessToken(user);
     const newRefreshToken = generateRefreshToken();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    const expiresAt = new Date(
+        Date.now() + 30 * 24 * 60 * 60 * 1000
+    );
+
     await saveRefreshToken(user.id, newRefreshToken, expiresAt);
 
     return {
@@ -100,6 +140,7 @@ const refreshAuth = async (refreshToken) => {
     };
 };
 
+// ✅ LOGOUT
 const logoutUser = async (refreshToken) => {
     if (!refreshToken) {
         const error = new Error('Refresh token required');
@@ -108,7 +149,16 @@ const logoutUser = async (refreshToken) => {
     }
 
     await revokeRefreshToken(refreshToken);
-    return { success: true, message: 'Logged out successfully' };
+
+    return {
+        success: true,
+        message: 'Logged out successfully'
+    };
 };
 
-module.exports = { signupUser, loginUser, refreshAuth, logoutUser };
+module.exports = {
+    signupUser,
+    loginUser,
+    refreshAuth,
+    logoutUser
+};

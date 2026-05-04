@@ -401,6 +401,7 @@ export default function Dashboard() {
                     <BudgetProgress
                         spent={dashboard.budget.spent}
                         budget={dashboard.budget.budget}
+                        onUpdate={fetchDashboard}
                     />
                 </div>
 

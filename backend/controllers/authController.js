@@ -48,9 +48,9 @@ const login = async (req, res) => {
         const data = await loginUser(email, password);
 
         res.json({
-            success: true,
-            message: "Login successful",
-            ...data,
+            user: data.user,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken
         });
 
     } catch (error) {

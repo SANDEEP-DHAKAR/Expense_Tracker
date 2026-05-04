@@ -17,6 +17,13 @@ const refreshApi = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+    if (
+        config.url.includes("/auth/login") ||
+        config.url.includes("/auth/signup")
+    ) {
+        return config;
+    }
+
     const user = JSON.parse(localStorage.getItem("user"));
 
     if (user?.accessToken) {

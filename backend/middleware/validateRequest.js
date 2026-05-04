@@ -5,7 +5,7 @@ const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
 const badRequest = (res, errors) =>
     res.status(400).json({
         success: false,
-        message: "Validation failed",
+        message: errors.length > 0 ? errors[0] : "Validation failed",
         errors,
     });
 
@@ -20,7 +20,7 @@ const validateSignup = (req, res, next) => {
         errors.push("Valid email is required");
     }
     if (!password || typeof password !== "string" || password.length < 8) {
-        errors.push("Password must be at least 8 characters");
+        errors.push("Please enter at least 8 character password");
     }
 
     if (errors.length) return badRequest(res, errors);

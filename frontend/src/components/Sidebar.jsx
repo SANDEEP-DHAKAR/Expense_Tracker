@@ -26,8 +26,8 @@ export default function Sidebar() {
     ];
 
     return (
-        <div className="hidden xl:flex w-64 h-screen bg-gray-900 text-white p-5 fixed dark:bg-slate-950">
-            <div className="flex flex-col w-full">
+        <div className="hidden xl:flex w-[250px] shrink-0 min-h-screen bg-gray-900 text-white p-5 dark:bg-slate-950 flex-col">
+            <div className="flex flex-col w-full flex-1">
 
                 <h1 className="text-2xl font-bold mb-8">💰 Expense</h1>
 

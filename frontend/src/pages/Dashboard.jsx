@@ -181,10 +181,10 @@ export default function Dashboard() {
     const hasRecentTransactions = safeRecentTransactions.length > 0;
 
     return (
-        <div className="flex">
+        <div className="flex min-h-screen">
             <Sidebar />
 
-            <div className="ml-0 xl:ml-64 w-full p-4 sm:p-6 bg-gray-100 dark:bg-slate-950 min-h-screen relative">
+            <div className="flex-1 min-w-0 overflow-x-hidden w-full p-4 sm:p-6 bg-gray-100 dark:bg-slate-950 relative">
                 <div className="mx-auto w-full max-w-[1600px]">
                     <MobileNavbar />
 

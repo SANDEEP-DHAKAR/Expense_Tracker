@@ -19,29 +19,14 @@ app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
 // ===============================
 // ✅ CORS FIX (FINAL)
 // ===============================
-const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = (process.env.ALLOWED_ORIGINS || "")
-      .split(",")
-      .map(o => o.trim())
-      .filter(Boolean);
-
-    allowedOrigins.push("http://localhost:5173");
-
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(null, false); // strict mode
-  },
+app.use(cors({
+  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
-};
+}));
 
-app.use(cors(corsOptions));
+app.options("*", cors());
 
 // ===============================
 // 🔐 OTHER MIDDLEWARES

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getExpenses } from "../api/expenses";
 import ExpenseList from "../components/ExpenseList";
 import MobileNavbar from "../components/MobileNavbar";
+import Sidebar from "../components/Sidebar";
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
@@ -24,8 +25,10 @@ export default function Expenses() {
   }, []);
 
   return (
-    <div className="ml-0 xl:ml-64 w-full p-4 sm:p-6 bg-gray-100 dark:bg-slate-950 min-h-screen">
-      <MobileNavbar />
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <div className="flex-1 min-w-0 overflow-x-hidden w-full p-4 sm:p-6 bg-gray-100 dark:bg-slate-950 relative">
+        <MobileNavbar />
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold">Expenses</h1>
@@ -39,6 +42,7 @@ export default function Expenses() {
           {loading && <span className="text-sm text-gray-500 dark:text-slate-400">Loading...</span>}
         </div>
         <ExpenseList expenses={expenses} refresh={fetchExpenses} />
+      </div>
       </div>
     </div>
   );

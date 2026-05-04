@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { signupUser } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { AuthContext } from "../context/AuthContextValue";
 
 export default function Signup() {
   const [name, setName] = useState("");
@@ -9,6 +10,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
 const handleSignup = async () => {
   try {
@@ -24,7 +26,7 @@ const handleSignup = async () => {
       user: data.user,
     };
 
-    localStorage.setItem("user", JSON.stringify(authData));
+    login(authData);
 
     navigate("/dashboard");
 

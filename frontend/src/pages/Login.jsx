@@ -3,19 +3,21 @@ import { loginUser } from "../api/auth";
 import { AuthContext } from "../context/AuthContextValue";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Eye, EyeOff } from "lucide-react"; // 👈 add this
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false); // 👈 new
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const handleLogin = async (event) => {
-        event?.preventDefault();
+    const handleLogin = async (e) => {
+        e.preventDefault();
+
+        if (loading) return;
 
         if (!email || !password) {
             toast.error("Please fill all fields");
@@ -28,7 +30,10 @@ export default function Login() {
             const res = await loginUser({ email, password });
 
             login(res.data);
-            navigate("/");
+
+            // 🔥 FIXED REDIRECT
+            navigate("/dashboard", { replace: true });
+
         } catch (error) {
             const errorData = error.response?.data;
             const errorMessage =
@@ -37,7 +42,9 @@ export default function Login() {
                 error.message ||
                 "Login failed";
 
-            toast.error(typeof errorMessage === "string" ? errorMessage : JSON.stringify(errorMessage));
+            toast.error(typeof errorMessage === "string"
+                ? errorMessage
+                : JSON.stringify(errorMessage));
         } finally {
             setLoading(false);
         }
@@ -59,7 +66,6 @@ export default function Login() {
                         onChange={(e) => setEmail(e.target.value)}
                     />
 
-                    {/* 🔥 Password with icon */}
                     <div className="relative mb-3">
                         <input
                             type={showPassword ? "text" : "password"}

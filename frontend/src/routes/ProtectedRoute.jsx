@@ -3,16 +3,20 @@ import { AuthContext } from "../context/AuthContextValue";
 import { Navigate } from "react-router-dom";
 
 export default function ProtectedRoute({ children }) {
-    const { user } = useContext(AuthContext);
+    const { user, loading } = useContext(AuthContext);
 
-    // 🔥 WAIT UNTIL USER LOADS
-    if (user === null || user === undefined) {
-        return <div>Loading...</div>;
+    // 🔥 wait until auth is loaded
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                Loading...
+            </div>
+        );
     }
 
-    // ❌ Agar user nahi hai
-    if (!user) {
-        return <Navigate to="/login" />;
+    // ❌ not logged in
+    if (!user?.accessToken) {
+        return <Navigate to="/login" replace />;
     }
 
     return children;

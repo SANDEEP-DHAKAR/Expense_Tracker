@@ -3,10 +3,12 @@ import { loginUser } from "../api/auth";
 import { AuthContext } from "../context/AuthContextValue";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { Eye, EyeOff } from "lucide-react"; // 👈 add this
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false); // 👈 new
     const [loading, setLoading] = useState(false);
 
     const { login } = useContext(AuthContext);
@@ -25,10 +27,7 @@ export default function Login() {
 
             const res = await loginUser({ email, password });
 
-            // 🔐 Save user + token
             login(res.data);
-
-            // 🔁 Redirect
             navigate("/");
         } catch (error) {
             const errorData = error.response?.data;
@@ -60,13 +59,23 @@ export default function Login() {
                         onChange={(e) => setEmail(e.target.value)}
                     />
 
-                    <input
-                        type="password"
-                        className="border p-2 w-full mb-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
+                    {/* 🔥 Password with icon */}
+                    <div className="relative mb-3">
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            className="border p-2 w-full pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+
+                        <span
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-2.5 cursor-pointer text-gray-600"
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </span>
+                    </div>
 
                     <button
                         type="submit"

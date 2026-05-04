@@ -17,18 +17,34 @@ app.disable("x-powered-by");
 app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
 
 // ===============================
-// ✅ CORS FIX (FINAL)
+// ✅ CORS FINAL (STABLE)
 // ===============================
+const allowedOrigins = [
+  "https://expense-tracker-frontend-sx16.onrender.com",
+  "https://expense-tracker-admin.onrender.com",
+  "http://localhost:5173"
+];
+
 app.use(cors({
   origin: function (origin, callback) {
-    callback(null, true);
+    if (!origin) return callback(null, true); // Postman / mobile apps
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("CORS not allowed: " + origin));
+    }
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization", "Accept"]
 }));
 
-app.options(/(.*)/, cors());
+// ✅ Preflight
+app.options("*", cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 // ===============================
 // 🔐 OTHER MIDDLEWARES

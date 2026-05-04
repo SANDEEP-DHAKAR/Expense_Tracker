@@ -41,10 +41,10 @@ app.use(cors({
 }));
 
 // ✅ Preflight
-app.options("*", cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+// app.options("*", cors({
+//   origin: allowedOrigins,
+//   credentials: true
+// }));
 
 // ===============================
 // 🔐 OTHER MIDDLEWARES

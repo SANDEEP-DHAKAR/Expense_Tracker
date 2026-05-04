@@ -20,10 +20,12 @@ app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
 // ✅ CORS FIX (FINAL)
 // ===============================
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"],
+  origin: function (origin, callback) {
+    callback(null, true);
+  },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"]
 }));
 
 app.options(/(.*)/, cors());

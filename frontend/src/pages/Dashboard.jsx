@@ -380,8 +380,8 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
                     <div className="lg:col-span-2 bg-white p-4 rounded-xl shadow dark:bg-slate-800 min-w-0">
                         <h2 className="font-bold mb-4">📈 Monthly Trend</h2>
-                        <div className="w-full h-[320px] min-w-0">
-                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={320}>
+                        <div className="w-full h-[320px] min-w-0" style={{ width: '100%', height: 320 }}>
+                            <ResponsiveContainer width="100%" height="100%">
                                 <LineChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="month" />

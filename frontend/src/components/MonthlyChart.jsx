@@ -36,7 +36,7 @@ export default function MonthlyChart({ expenses = [] }) {
         📈 Monthly Trend
       </h2>
 
-      <div className="w-full h-[320px] sm:h-[360px] min-w-0">
+      <div className="w-full h-[320px] sm:h-[360px] min-h-[320px] min-w-0" style={{ width: '100%', height: 320 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             

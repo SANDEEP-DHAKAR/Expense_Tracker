@@ -28,7 +28,7 @@ const handleSignup = async () => {
 
     login(authData);
 
-    navigate("/dashboard");
+    navigate("/");
 
   } catch (err) {
     toast.error(err.response?.data?.message || "Signup failed");

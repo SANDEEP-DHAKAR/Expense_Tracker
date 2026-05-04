@@ -28,7 +28,7 @@ export default function DailyChart({ data = [] }) {
           No data available
         </div>
       ) : (
-        <div className="w-full h-[300px] sm:h-[360px]">
+        <div className="w-full h-[320px] sm:h-[360px] min-h-[320px] min-w-0" style={{ width: '100%', height: 320 }}>
 
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={sortedData}>

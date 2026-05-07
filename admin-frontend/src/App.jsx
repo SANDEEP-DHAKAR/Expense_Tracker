@@ -1,23 +1,16 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
-import Users from "./pages/Users";
-import Login from "./pages/Login";
-import Expenses from "./pages/Expenses";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AdminProtectedRoute from "./routes/AdminProtectedRoute";
+import Dashboard from "./pages/Dashboard";
+import Expenses from "./pages/Expenses";
+import Login from "./pages/Login";
+import Users from "./pages/Users";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route
-          path="/"
-          element={
-            <AdminProtectedRoute>
-              <Dashboard />
-            </AdminProtectedRoute>
-          }
-        />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route
           path="/dashboard"
           element={
@@ -42,6 +35,7 @@ function App() {
             </AdminProtectedRoute>
           }
         />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );

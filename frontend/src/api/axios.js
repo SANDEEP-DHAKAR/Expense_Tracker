@@ -24,7 +24,12 @@ api.interceptors.request.use((config) => {
         return config;
     }
 
-    const user = JSON.parse(localStorage.getItem("user"));
+    let user = null;
+    try {
+        user = JSON.parse(localStorage.getItem("user") || "null");
+    } catch {
+        localStorage.removeItem("user");
+    }
 
     if (user?.accessToken) {
         config.headers.Authorization = `Bearer ${user.accessToken}`;
@@ -45,7 +50,12 @@ api.interceptors.response.use(
             originalRequest.url !== "/auth/refresh"
         ) {
             originalRequest._retry = true;
-            const storedUser = JSON.parse(localStorage.getItem("user"));
+            let storedUser = null;
+            try {
+                storedUser = JSON.parse(localStorage.getItem("user") || "null");
+            } catch {
+                localStorage.removeItem("user");
+            }
             const refreshToken = storedUser?.refreshToken;
 
             if (!refreshToken) {

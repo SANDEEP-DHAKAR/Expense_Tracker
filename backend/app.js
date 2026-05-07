@@ -10,55 +10,44 @@ const errorMiddleware = require("./middleware/errorMiddleware");
 
 const app = express();
 
-// ===============================
-// 🔐 BASIC SETUP
-// ===============================
 app.disable("x-powered-by");
 app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
 
-// ===============================
-// ✅ CORS FINAL (STABLE)
-// ===============================
-const allowedOrigins = [
+const defaultOrigins = [
   "https://expense-tracker-frontend-sx16.onrender.com",
   "https://expense-tracker-admin.onrender.com",
-  "http://localhost:5173"
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // Postman / mobile apps
+const allowedOrigins = (process.env.CORS_ORIGINS || defaultOrigins.join(","))
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
       return callback(new Error("CORS not allowed: " + origin));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization", "Accept"]
-}));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  })
+);
 
-// ✅ Preflight
-// app.options("*", cors({
-//   origin: allowedOrigins,
-//   credentials: true
-// }));
-
-// ===============================
-// 🔐 OTHER MIDDLEWARES
-// ===============================
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: "200kb" }));
 app.use(express.urlencoded({ extended: true, limit: "200kb" }));
 
-// 🚫 Rate limiter
 app.use("/api/auth", apiLimiter);
 
-// ===============================
-// 🏥 HEALTH CHECK
-// ===============================
 app.get("/", (req, res) => {
   res.send("Expense Tracker API is running");
 });
@@ -72,9 +61,6 @@ app.get("/health", (req, res) => {
   });
 });
 
-// ===============================
-// 🧪 DB TEST
-// ===============================
 app.get("/test-db", async (req, res) => {
   try {
     const [rows] = await db.query("SELECT 1");
@@ -84,9 +70,6 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// ===============================
-// 🚀 ROUTES
-// ===============================
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/protected", require("./routes/protectedRoutes"));
 app.use("/api/expenses", require("./routes/expenseRoutes"));
@@ -96,19 +79,13 @@ app.use("/api/budgets", require("./routes/budgetRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 
-// ===============================
-// ❌ 404
-// ===============================
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: "Route not found"
+    message: "Route not found",
   });
 });
 
-// ===============================
-// ❗ ERROR HANDLER (LAST)
-// ===============================
 app.use(errorMiddleware);
 
 module.exports = app;

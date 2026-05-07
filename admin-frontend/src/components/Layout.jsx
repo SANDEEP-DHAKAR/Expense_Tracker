@@ -1,17 +1,16 @@
-import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
 export default function Layout({ children }) {
   return (
-    <div className="flex">
+    <div className="min-h-screen text-slate-950">
       <Sidebar />
 
-      <div className="ml-64 w-full">
+      <div className="min-h-screen min-w-0 xl:pl-72">
         <Navbar />
-
-        <div className="p-6 bg-gray-100 min-h-screen">
+        <main className="mx-auto w-full max-w-screen-2xl px-4 py-5 sm:px-6 lg:px-8 2xl:px-10">
           {children}
-        </div>
+        </main>
       </div>
     </div>
   );

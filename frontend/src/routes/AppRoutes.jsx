@@ -1,24 +1,25 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Dashboard from "../pages/Dashboard";
-import ProtectedRoute from "./ProtectedRoute";
-import Signup from "../pages/Signup";
-import Login from "../pages/Login";
-import Expenses from "../pages/Expenses";
-import Categories from "../pages/Categories";
 import { useContext } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthContext } from "../context/AuthContextValue";
-import { Navigate } from "react-router-dom";
+import Categories from "../pages/Categories";
+import Dashboard from "../pages/Dashboard";
+import Expenses from "../pages/Expenses";
+import Login from "../pages/Login";
+import Signup from "../pages/Signup";
+import ProtectedRoute from "./ProtectedRoute";
 
 function RootRedirect() {
   const { user, loading } = useContext(AuthContext);
 
-  if (loading) return <div>Loading...</div>;
-
-  if (user?.accessToken) {
-    return <Navigate to="/dashboard" replace />;
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+        Loading...
+      </div>
+    );
   }
 
-  return <Navigate to="/signup" replace />;
+  return <Navigate to={user?.accessToken ? "/dashboard" : "/login"} replace />;
 }
 
 export default function AppRoutes() {
@@ -26,10 +27,8 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RootRedirect />} />
-
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-
         <Route
           path="/dashboard"
           element={
@@ -38,7 +37,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/expenses"
           element={
@@ -47,7 +45,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/categories"
           element={
@@ -56,6 +53,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<RootRedirect />} />
       </Routes>
     </BrowserRouter>
   );

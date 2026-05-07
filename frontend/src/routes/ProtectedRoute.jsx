@@ -1,23 +1,21 @@
 import { useContext } from "react";
-import { AuthContext } from "../context/AuthContextValue";
 import { Navigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContextValue";
 
 export default function ProtectedRoute({ children }) {
-    const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
 
-    // 🔥 wait until auth is loaded
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                Loading...
-            </div>
-        );
-    }
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+        Loading...
+      </div>
+    );
+  }
 
-    // ❌ not logged in
-    if (!user?.accessToken) {
-        return <Navigate to="/login" replace />;
-    }
+  if (!user?.accessToken) {
+    return <Navigate to="/login" replace />;
+  }
 
-    return children;
+  return children;
 }

@@ -1,82 +1,124 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Pencil, Save, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { setBudget } from "../api/budgets";
+import { formatCurrency } from "../utils/format";
 
-export default function BudgetProgress({ spent = 0, budget = 10000, onUpdate }) {
-  const percent = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
-  
+export default function BudgetProgress({ spent = 0, budget = 0, onUpdate }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [newBudget, setNewBudget] = useState(budget);
+  const [newBudget, setNewBudget] = useState(budget || "");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!isEditing) setNewBudget(budget || "");
+  }, [budget, isEditing]);
+
+  const percent = useMemo(() => {
+    if (!budget || Number(budget) <= 0) return 0;
+    return Math.min((Number(spent) / Number(budget)) * 100, 100);
+  }, [spent, budget]);
+
+  const statusTone =
+    percent >= 100
+      ? "bg-rose-600"
+      : percent >= 80
+        ? "bg-amber-500"
+        : "bg-blue-600";
+
   const handleSave = async () => {
-    if (!newBudget || newBudget <= 0) return;
+    const amount = Number(newBudget);
+
+    if (!amount || amount <= 0) {
+      toast.error("Enter a valid monthly budget");
+      return;
+    }
+
     try {
       setLoading(true);
-      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-      await setBudget({ monthly_limit: Number(newBudget), month: currentMonth });
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      await setBudget({ monthly_limit: amount, month: currentMonth });
       setIsEditing(false);
-      if (onUpdate) onUpdate();
+      toast.success("Budget updated");
+      await onUpdate?.();
     } catch (err) {
       console.error("Failed to update budget:", err);
-      alert(err.response?.data?.message || "Failed to update budget");
+      toast.error(err.response?.data?.message || "Failed to update budget");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="mt-6 p-4 bg-white rounded-3xl shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="font-bold text-slate-900 dark:text-slate-100">💰 Budget Usage</h2>
+    <section className="rounded-xl border border-slate-200/80 bg-white/90 p-5 shadow-sm shadow-slate-200/60 backdrop-blur dark:border-slate-800/80 dark:bg-slate-900/90 dark:shadow-none">
+      <div className="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold text-slate-950 dark:text-white">
+            Budget usage
+          </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {formatCurrency(spent)} spent of {formatCurrency(budget)}
+          </p>
+        </div>
+
         {!isEditing ? (
-          <button 
-            onClick={() => { setIsEditing(true); setNewBudget(budget); }}
-            className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg hover:bg-indigo-200 dark:bg-indigo-900/50 dark:text-indigo-300"
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
           >
-            Edit Budget
+            <Pencil size={15} />
+            Edit
           </button>
         ) : (
           <div className="flex gap-2">
-            <button 
+            <button
+              type="button"
               onClick={handleSave}
               disabled={loading}
-              className="text-xs bg-emerald-500 text-white px-2 py-1 rounded-lg hover:bg-emerald-600 disabled:opacity-50"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white transition hover:bg-emerald-700 disabled:opacity-60"
+              aria-label="Save budget"
             >
-              {loading ? "Saving..." : "Save"}
+              <Save size={15} />
             </button>
-            <button 
+            <button
+              type="button"
               onClick={() => setIsEditing(false)}
               disabled={loading}
-              className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-lg hover:bg-gray-300 dark:bg-slate-700 dark:text-slate-300"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition hover:bg-slate-200 disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200"
+              aria-label="Cancel budget edit"
             >
-              Cancel
+              <X size={15} />
             </button>
           </div>
         )}
       </div>
 
       {isEditing ? (
-        <div className="mb-3">
-          <input 
-            type="number"
-            value={newBudget}
-            onChange={(e) => setNewBudget(e.target.value)}
-            className="w-full text-sm border border-gray-300 rounded-xl px-3 py-2 dark:bg-slate-900 dark:border-slate-700 dark:text-white focus:ring-2 focus:ring-indigo-500"
-            placeholder="Enter monthly budget limit"
-          />
-        </div>
+        <input
+          type="number"
+          min="1"
+          value={newBudget}
+          onChange={(event) => setNewBudget(event.target.value)}
+          className="mb-4 w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-slate-900"
+          placeholder="Monthly budget"
+        />
       ) : null}
 
-      <div className="w-full bg-slate-200/70 rounded-full h-4 dark:bg-slate-700">
-        <div
-          className={`h-4 rounded-full ${percent >= 100 ? 'bg-red-500' : percent >= 80 ? 'bg-orange-500' : 'bg-gradient-to-r from-indigo-600 to-cyan-500'}`}
-          style={{ width: `${percent}%` }}
-        ></div>
+      <div className="mb-3 flex items-end justify-between gap-3">
+        <span className="text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">
+          {Math.round(percent)}%
+        </span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">
+          remaining {formatCurrency(Math.max(Number(budget) - Number(spent), 0))}
+        </span>
       </div>
 
-      <p className="mt-2 text-sm text-gray-600 dark:text-slate-400">
-        ₹{spent} / ₹{budget} ({Math.round(percent)}%)
-      </p>
-    </div>
+      <div className="h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+        <div
+          className={`h-full rounded-full transition-all duration-700 ${statusTone}`}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+    </section>
   );
 }

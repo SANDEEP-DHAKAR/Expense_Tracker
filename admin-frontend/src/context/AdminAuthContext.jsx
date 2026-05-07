@@ -1,11 +1,20 @@
 import { useMemo, useState } from "react";
+import { logoutUser } from "../api/auth";
 import { AdminAuthContext } from "./AdminAuthContextValue";
 
-export default function AdminAuthProvider({ children }) {
-  const [adminUser, setAdminUser] = useState(() => {
+function readStoredAdmin() {
+  try {
     const raw = localStorage.getItem("adminUser");
     return raw ? JSON.parse(raw) : null;
-  });
+  } catch {
+    localStorage.removeItem("adminUser");
+    localStorage.removeItem("token");
+    return null;
+  }
+}
+
+export default function AdminAuthProvider({ children }) {
+  const [adminUser, setAdminUser] = useState(readStoredAdmin);
 
   const login = (payload) => {
     localStorage.setItem("adminUser", JSON.stringify(payload));
@@ -15,7 +24,13 @@ export default function AdminAuthProvider({ children }) {
     setAdminUser(payload);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const refreshToken = readStoredAdmin()?.refreshToken;
+
+    if (refreshToken) {
+      await logoutUser({ refreshToken }).catch(() => null);
+    }
+
     localStorage.removeItem("adminUser");
     localStorage.removeItem("token");
     setAdminUser(null);

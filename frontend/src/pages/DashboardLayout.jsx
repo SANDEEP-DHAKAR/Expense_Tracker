@@ -1,52 +1,71 @@
-import Header from "../components/dashboard/Header";
-import StatsCards from "../components/dashboard/StatsCards";
-import BudgetSection from "../components/dashboard/BudgetSection";
-import RecentTransactions from "../components/dashboard/RecentTransactions";
+import AppShell from "../components/AppShell";
 import AddExpenseQuick from "../components/dashboard/AddExpenseQuick";
-import ChartsSection from "../components/dashboard/ChartsSection";
+import BudgetSection from "../components/dashboard/BudgetSection";
 import CategoryBreakdown from "../components/dashboard/CategoryBreakdown";
-
-import Sidebar from "../components/Sidebar";
-import MobileNavbar from "../components/MobileNavbar";
+import ChartsSection from "../components/dashboard/ChartsSection";
+import Header from "../components/dashboard/Header";
+import RecentTransactions from "../components/dashboard/RecentTransactions";
+import StatsCards from "../components/dashboard/StatsCards";
+import { PanelSkeleton } from "../components/ui/Skeleton";
+import { useDashboard } from "../context/DashboardContextValue";
 
 export default function DashboardLayout() {
+  const { loading, error, refresh } = useDashboard();
+
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <Sidebar />
+    <AppShell>
+      <div className="space-y-5">
+        <Header />
 
-      {/* Main */}
-      <div className="flex-1 p-4 sm:p-6 bg-gray-100 dark:bg-slate-950 overflow-x-hidden">
-        <div className="max-w-[1400px] mx-auto space-y-6">
-
-          <MobileNavbar />
-
-          {/* Header */}
-          <Header />
-
-          {/* Stats */}
-          <StatsCards />
-
-          {/* MAIN GRID */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            {/* LEFT SIDE (big area) */}
-            <div className="lg:col-span-2 space-y-6">
-              <ChartsSection />
-              <RecentTransactions />
+        {error ? (
+          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span>{error}</span>
+              <button
+                type="button"
+                onClick={refresh}
+                className="rounded-lg bg-rose-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-rose-700"
+              >
+                Retry
+              </button>
             </div>
-
-            {/* RIGHT SIDE (sidebar widgets) */}
-            <div className="space-y-6">
-              <BudgetSection />
-              <CategoryBreakdown />
-              <AddExpenseQuick />
-            </div>
-
           </div>
+        ) : null}
 
-        </div>
+        {loading ? (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <PanelSkeleton key={index} rows={2} />
+              ))}
+            </div>
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+              <PanelSkeleton rows={7} />
+              <div className="space-y-5">
+                <PanelSkeleton rows={4} />
+                <PanelSkeleton rows={4} />
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <StatsCards />
+
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+              <section className="min-w-0 space-y-5">
+                <ChartsSection />
+                <RecentTransactions />
+              </section>
+
+              <aside className="min-w-0 space-y-5">
+                <BudgetSection />
+                <CategoryBreakdown />
+                <AddExpenseQuick />
+              </aside>
+            </div>
+          </>
+        )}
       </div>
-    </div>
+    </AppShell>
   );
 }

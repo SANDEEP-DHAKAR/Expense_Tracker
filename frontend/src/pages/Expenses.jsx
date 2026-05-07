@@ -1,49 +1,63 @@
-import { useEffect, useState } from "react";
-import { getExpenses } from "../api/expenses";
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import AppShell from "../components/AppShell";
+import AddExpense from "../components/AddExpense";
 import ExpenseList from "../components/ExpenseList";
-import MobileNavbar from "../components/MobileNavbar";
-import Sidebar from "../components/Sidebar";
+import { PanelSkeleton } from "../components/ui/Skeleton";
+import { getCategories } from "../api/categories";
+import { getExpenses } from "../api/expenses";
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await getExpenses({ limit: 1000 });
-      setExpenses(res?.data?.data || []);
+      const [expenseRes, categoryRes] = await Promise.all([
+        getExpenses({ limit: 1000 }),
+        getCategories(),
+      ]);
+      setExpenses(expenseRes?.data?.data || []);
+      setCategories(categoryRes?.data?.data || []);
     } catch (err) {
       console.error("FETCH EXPENSES ERROR:", err);
+      toast.error(err?.response?.data?.message || "Unable to load expenses");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchExpenses();
-  }, []);
+  }, [fetchExpenses]);
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <div className="flex-1 min-w-0 overflow-x-hidden w-full p-4 sm:p-6 bg-gray-100 dark:bg-slate-950 relative">
-        <MobileNavbar />
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Expenses</h1>
-          <p className="text-gray-500 dark:text-slate-400 mt-1">Review and manage all your expenses in one place.</p>
+    <AppShell>
+      <div className="space-y-5">
+        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+            Ledger
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
+            Expenses
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Search, edit, and manage every transaction without losing context.
+          </p>
         </div>
-      </div>
 
-      <div className="bg-white rounded-xl shadow p-6 dark:bg-slate-800">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">All Expenses</h2>
-          {loading && <span className="text-sm text-gray-500 dark:text-slate-400">Loading...</span>}
+        <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+          <AddExpense refresh={fetchExpenses} categories={categories} />
+
+          {loading ? (
+            <PanelSkeleton rows={8} />
+          ) : (
+            <ExpenseList expenses={expenses} refresh={fetchExpenses} />
+          )}
         </div>
-        <ExpenseList expenses={expenses} refresh={fetchExpenses} />
       </div>
-      </div>
-    </div>
+    </AppShell>
   );
 }

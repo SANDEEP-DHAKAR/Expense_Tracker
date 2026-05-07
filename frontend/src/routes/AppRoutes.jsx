@@ -12,13 +12,19 @@ import { Navigate } from "react-router-dom";
 function RootRedirect() {
   const { user, loading } = useContext(AuthContext);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+        Loading...
+      </div>
+    );
+  }
 
   if (user?.accessToken) {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <Navigate to="/signup" replace />;
+  return <Navigate to="/login" replace />;
 }
 
 export default function AppRoutes() {

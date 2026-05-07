@@ -1,280 +1,278 @@
+import { useEffect, useMemo, useState } from "react";
+import { Pencil, Search, Trash2, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { deleteExpense, updateExpense } from "../api/expenses";
-import { useState, useMemo, useEffect } from "react";
+import { formatCurrency, formatDate } from "../utils/format";
 
 export default function ExpenseList({ expenses = [], refresh }) {
-    const [editingId, setEditingId] = useState(null);
-    const [editData, setEditData] = useState({ note: "", amount: "", expenseDate: "" });
-    const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({ note: "", amount: "", expenseDate: "" });
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
-    const [search, setSearch] = useState("");
-    const [dateFilter, setDateFilter] = useState("");
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, dateFilter]);
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this expense?")) return;
 
-    // 🔥 reset page on filter change
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [search, dateFilter]);
+    try {
+      await deleteExpense(id);
+      toast.success("Expense deleted");
+      await refresh?.();
+    } catch (err) {
+      console.error("DELETE EXPENSE ERROR:", err);
+      toast.error(err?.response?.data?.message || "Delete failed");
+    }
+  };
 
-    // 🗑 DELETE
-    const handleDelete = async (id) => {
-        try {
-            await deleteExpense(id);
-            await refresh();
-        } catch (err) {
-            console.log(err);
-        }
-    };
+  const startEdit = (expense) => {
+    setEditingId(expense.id);
+    setEditData({
+      note: expense.note ?? "",
+      amount: expense.amount !== undefined ? String(expense.amount) : "",
+      expenseDate: expense.expense_date ? expense.expense_date.slice(0, 10) : "",
+    });
+  };
 
-    // ✏️ EDIT START (IMPORTANT FIX)
-    const startEdit = (exp) => {
-        setEditingId(exp.id);
+  const handleChange = (field, value) => {
+    setEditData((prev) => ({ ...prev, [field]: value }));
+  };
 
-        setEditData({
-            note: exp.note ?? "",
-            amount: exp.amount !== undefined ? String(exp.amount) : "",
-            expenseDate: exp.expense_date ? exp.expense_date.slice(0, 10) : "",
-        });
-    };
+  const handleUpdate = async () => {
+    const amount = Number(editData.amount);
 
-    // ✏️ SAFE STATE UPDATE
-    const handleChange = (field, value) => {
-        setEditData((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-    };
+    if (Number.isNaN(amount) || amount <= 0 || !editData.expenseDate) {
+      toast.error("Amount and date are required");
+      return;
+    }
 
-    // 💾 SAVE (FIXED)
-    const handleUpdate = async () => {
-        try {
-            setLoading(true);
+    try {
+      setLoading(true);
+      await updateExpense(editingId, {
+        note: editData.note?.trim(),
+        amount,
+        expenseDate: editData.expenseDate,
+      });
 
-            const amount = Number(editData.amount);
+      setEditingId(null);
+      setEditData({ note: "", amount: "", expenseDate: "" });
+      toast.success("Expense updated");
+      await refresh?.();
+    } catch (err) {
+      console.error("UPDATE EXPENSE ERROR:", err?.response?.data || err);
+      toast.error(err?.response?.data?.message || "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            const payload = {
-                note: editData.note?.trim(),
-                amount: amount,
-                expenseDate: editData.expenseDate,
-            };
+  const filteredExpenses = useMemo(() => {
+    return (expenses || [])
+      .filter((expense) => expense && expense.id)
+      .filter((expense) => {
+        const note = expense.note || "";
+        const category = expense.category_name || expense.category || "";
+        const matchSearch = `${note} ${category}`
+          .toLowerCase()
+          .includes(search.toLowerCase());
+        const matchDate = dateFilter
+          ? (expense.expense_date || "").slice(0, 10) === dateFilter
+          : true;
 
-            console.log("PAYLOAD SENT:", payload);
+        return matchSearch && matchDate;
+      });
+  }, [expenses, search, dateFilter]);
 
-            // 🚨 HARD VALIDATION (IMPORTANT)
-            if (isNaN(payload.amount) || !payload.expenseDate) {
-                alert("Amount and date are required ❌");
-                return;
-            }
+  const totalPages = Math.max(Math.ceil(filteredExpenses.length / itemsPerPage), 1);
+  const paginatedExpenses = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredExpenses.slice(start, start + itemsPerPage);
+  }, [filteredExpenses, currentPage]);
 
-            const res = await updateExpense(editingId, payload);
-
-            console.log("SUCCESS RESPONSE:", res);
-
-            setEditingId(null);
-            setEditData({ note: "", amount: "", expenseDate: "" });
-
-            await refresh();
-        } catch (err) {
-            console.log("BACKEND ERROR:", err?.response?.data || err);
-            alert(err?.response?.data?.message || "Update failed ❌");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // 🔍 FILTER SAFE
-    const filteredExpenses = useMemo(() => {
-        return (expenses || [])
-            .filter((exp) => exp && exp.id)
-            .filter((exp) => {
-                const note = exp.note || "";
-
-                const matchSearch = note
-                    .toLowerCase()
-                    .includes(search.toLowerCase());
-
-                const matchDate = dateFilter
-                    ? (exp.expense_date || "").slice(0, 10) === dateFilter
-                    : true;
-
-                return matchSearch && matchDate;
-            });
-    }, [expenses, search, dateFilter]);
-
-    // 📄 PAGINATION
-    const totalPages = Math.ceil(filteredExpenses.length / itemsPerPage);
-
-    const paginatedExpenses = useMemo(() => {
-        const start = (currentPage - 1) * itemsPerPage;
-        return filteredExpenses.slice(start, start + itemsPerPage);
-    }, [filteredExpenses, currentPage]);
-
-    return (
-        <div className="mt-6 bg-white p-5 rounded-3xl shadow-xl ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-700">
-
-            <h2 className="text-lg font-bold mb-4 text-slate-900 dark:text-slate-100">
-                📋 Expenses
+  return (
+    <section className="min-w-0 rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <div className="border-b border-slate-200 p-5 dark:border-slate-800">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-950 dark:text-white">
+              All expenses
             </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {filteredExpenses.length} matching transactions
+            </p>
+          </div>
 
-            {/* FILTERS */}
-            <div className="flex flex-col gap-3 md:flex-row mb-4">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <label className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder="Search note or category"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-slate-900 sm:w-64"
+              />
+            </label>
 
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="border px-4 py-3 rounded-3xl w-full dark:bg-slate-900"
-                />
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(event) => setDateFilter(event.target.value)}
+              className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:ring-slate-900"
+            />
 
-                <input
-                    type="date"
-                    value={dateFilter}
-                    onChange={(e) => setDateFilter(e.target.value)}
-                    className="border px-4 py-3 rounded-3xl w-full md:w-48 dark:bg-slate-900"
-                />
-
-                <button
-                    onClick={() => {
-                        setSearch("");
-                        setDateFilter("");
-                    }}
-                    className="rounded-3xl bg-slate-200 px-4 py-3"
-                >
-                    Reset
-                </button>
-            </div>
-
-            {/* LIST */}
-            {paginatedExpenses.length === 0 ? (
-                <p className="text-center text-gray-500">
-                    No expenses found 🚀
-                </p>
-            ) : (
-                paginatedExpenses.map((exp) => (
-                    <div key={exp.id} className="py-4 border-b">
-
-                        {editingId === exp.id ? (
-                            <div className="grid gap-3">
-
-                                {/* NOTE */}
-                                <input
-                                    value={editData.note}
-                                    onChange={(e) =>
-                                        handleChange("note", e.target.value)
-                                    }
-                                    className="border px-3 py-2 rounded-2xl"
-                                    placeholder="Note"
-                                />
-
-                                <div className="grid gap-3 sm:grid-cols-[1fr_160px]">
-
-                                    {/* AMOUNT */}
-                                    <input
-                                        value={editData.amount}
-                                        onChange={(e) =>
-                                            handleChange("amount", e.target.value)
-                                        }
-                                        className="border px-3 py-2 w-full rounded-2xl"
-                                        placeholder="Amount"
-                                    />
-
-                                    {/* DATE */}
-                                    <input
-                                        type="date"
-                                        value={editData.expenseDate}
-                                        onChange={(e) =>
-                                            handleChange("expenseDate", e.target.value)
-                                        }
-                                        className="border px-3 py-2 w-full rounded-2xl"
-                                    />
-                                </div>
-
-                                <div className="flex flex-wrap gap-2">
-                                    {/* SAVE */}
-                                    <button
-                                        onClick={handleUpdate}
-                                        disabled={loading}
-                                        className={`px-4 py-2 rounded-2xl text-white ${loading
-                                                ? "bg-gray-400"
-                                                : "bg-emerald-500 hover:bg-emerald-600"
-                                            }`}
-                                    >
-                                        {loading ? "Saving..." : "Save"}
-                                    </button>
-
-                                    {/* CANCEL */}
-                                    <button
-                                        onClick={() => setEditingId(null)}
-                                        className="bg-gray-200 px-4 py-2 rounded-2xl"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex justify-between">
-
-                                <div>
-                                    <p className="font-medium">
-                                        {exp.note || "No note"}
-                                    </p>
-
-                                    <p className="text-sm text-gray-500">
-                                        ₹{exp.amount} ·{" "}
-                                        {exp.expense_date?.slice(0, 10) ||
-                                            "No date"}
-                                    </p>
-                                </div>
-
-                                <div className="flex gap-2">
-
-                                    <button
-                                        onClick={() => startEdit(exp)}
-                                        className="bg-yellow-500 px-4 py-2 text-white rounded-2xl"
-                                    >
-                                        Edit
-                                    </button>
-
-                                    <button
-                                        onClick={() => handleDelete(exp.id)}
-                                        className="bg-red-500 px-4 py-2 text-white rounded-2xl"
-                                    >
-                                        Delete
-                                    </button>
-
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ))
-            )}
-
-            {/* PAGINATION */}
-            {totalPages > 1 && (
-                <div className="flex justify-center gap-3 mt-4">
-
-                    <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage((p) => p - 1)}
-                    >
-                        Prev
-                    </button>
-
-                    <span>
-                        Page {currentPage} of {totalPages}
-                    </span>
-
-                    <button
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage((p) => p + 1)}
-                    >
-                        Next
-                    </button>
-
-                </div>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                setDateFilter("");
+              }}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <X size={15} />
+              Reset
+            </button>
+          </div>
         </div>
-    );
+      </div>
+
+      {paginatedExpenses.length === 0 ? (
+        <div className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+          No expenses found.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-950/60 dark:text-slate-400">
+              <tr>
+                <th className="px-5 py-3 font-medium">Note</th>
+                <th className="px-5 py-3 font-medium">Date</th>
+                <th className="px-5 py-3 text-right font-medium">Amount</th>
+                <th className="px-5 py-3 text-right font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+              {paginatedExpenses.map((expense) => (
+                <tr key={expense.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-950/60">
+                  {editingId === expense.id ? (
+                    <>
+                      <td className="px-5 py-3">
+                        <input
+                          value={editData.note}
+                          onChange={(event) => handleChange("note", event.target.value)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                        />
+                      </td>
+                      <td className="px-5 py-3">
+                        <input
+                          type="date"
+                          value={editData.expenseDate}
+                          onChange={(event) => handleChange("expenseDate", event.target.value)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                        />
+                      </td>
+                      <td className="px-5 py-3">
+                        <input
+                          value={editData.amount}
+                          onChange={(event) => handleChange("amount", event.target.value)}
+                          className="ml-auto w-36 rounded-lg border border-slate-200 bg-white px-3 py-2 text-right text-sm outline-none focus:border-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                        />
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={handleUpdate}
+                            disabled={loading}
+                            className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingId(null)}
+                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="max-w-[280px] px-5 py-4">
+                        <p className="truncate font-medium text-slate-900 dark:text-slate-100">
+                          {expense.note || "No note"}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                          {expense.category_name || expense.category || "Uncategorized"}
+                        </p>
+                      </td>
+                      <td className="px-5 py-4 text-slate-500 dark:text-slate-400">
+                        {formatDate(expense.expense_date)}
+                      </td>
+                      <td className="px-5 py-4 text-right font-semibold text-slate-950 dark:text-white">
+                        {formatCurrency(expense.amount)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(expense)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
+                            aria-label="Edit expense"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(expense.id)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-100 bg-rose-50 text-rose-700 transition hover:bg-rose-100 dark:border-rose-950 dark:bg-rose-950/40 dark:text-rose-300"
+                            aria-label="Delete expense"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {filteredExpenses.length > itemsPerPage ? (
+        <div className="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 text-sm sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+          <span className="text-slate-500 dark:text-slate-400">
+            Page {currentPage} of {totalPages}
+          </span>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+              className="rounded-lg border border-slate-200 px-3 py-2 font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
+              className="rounded-lg border border-slate-200 px-3 py-2 font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
 }

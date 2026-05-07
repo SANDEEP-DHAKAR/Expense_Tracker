@@ -1,37 +1,12 @@
-import { useDashboard } from "../../context/DashboardContext";
+import AddExpense from "../AddExpense";
+import { useDashboard } from "../../context/DashboardContextValue";
 
-export default function CategoryBreakdown() {
-  const { summary } = useDashboard();
-
-  const data = summary?.category_breakdown || [];
+export default function AddExpenseQuick() {
+  const { refresh, categories } = useDashboard();
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow">
-      <h3 className="text-lg font-semibold mb-4">
-        Category Breakdown
-      </h3>
-
-      {data.length === 0 ? (
-        <p className="text-gray-500">No category data yet</p>
-      ) : (
-        <ul>
-          {data.map((item) => {
-            const amount = Number(item.total || 0); // 🔥 FIX
-
-            return (
-              <li
-                key={item.name}
-                className="py-2 border-b flex justify-between"
-              >
-                <span>{item.name}</span>
-
-                {/* ✅ SAFE */}
-                <span>₹{amount.toFixed(2)}</span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+    <section id="quick-add-expense">
+      <AddExpense refresh={refresh} categories={categories} compact />
+    </section>
   );
 }

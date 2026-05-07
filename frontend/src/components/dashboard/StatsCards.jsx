@@ -1,45 +1,71 @@
-import { useDashboard } from "../../context/DashboardContext";
+import { ArrowDownRight, CalendarDays, Gauge, ReceiptText } from "lucide-react";
+import { useDashboard } from "../../context/DashboardContextValue";
+import { formatCurrency } from "../../utils/format";
 
 export default function StatsCards() {
   const { summary } = useDashboard();
 
-  const formatCurrency = (num) =>
-    new Intl.NumberFormat("en-IN").format(Number(num || 0));
+  const total = Number(summary?.summary?.total_expense || 0);
+  const monthly = Number(summary?.summary?.monthly_expense || 0);
+  const transactions = summary?.recent_transactions?.length || 0;
+  const budgetUsed = Math.round(summary?.budget?.used_percentage || 0);
 
   const cards = [
     {
-      title: "Monthly",
-      value: `₹${formatCurrency(summary?.summary?.monthly_expense)}`,
-      color: "from-indigo-500 to-indigo-600",
+      title: "This month",
+      value: formatCurrency(monthly, true),
+      detail: "Current month spend",
+      icon: CalendarDays,
     },
     {
-      title: "Total",
-      value: `₹${formatCurrency(summary?.summary?.total_expense)}`,
-      color: "from-green-500 to-emerald-600",
+      title: "All-time spend",
+      value: formatCurrency(total, true),
+      detail: "Across all expenses",
+      icon: ArrowDownRight,
     },
     {
-      title: "Entries",
-      value: summary?.recent_transactions?.length || 0,
-      color: "from-purple-500 to-pink-500",
+      title: "Recent entries",
+      value: transactions,
+      detail: "Latest transactions",
+      icon: ReceiptText,
     },
     {
-      title: "Budget Used",
-      value: `${Math.round(summary?.budget?.used_percentage || 0)}%`,
-      color: "from-orange-500 to-red-500",
+      title: "Budget used",
+      value: `${budgetUsed}%`,
+      detail: "Monthly allocation",
+      icon: Gauge,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {cards.map((card, i) => (
-        <div
-          key={i}
-          className={`rounded-2xl p-4 text-white shadow-lg bg-gradient-to-r ${card.color}`}
-        >
-          <p className="text-sm opacity-80">{card.title}</p>
-          <h2 className="text-2xl font-bold mt-1">{card.value}</h2>
-        </div>
-      ))}
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {cards.map((card) => {
+        const Icon = card.icon;
+
+        return (
+          <div
+            key={card.title}
+            className="group rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                  {card.title}
+                </p>
+                <p className="mt-2 truncate text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">
+                  {card.value}
+                </p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition group-hover:bg-slate-950 group-hover:text-white dark:bg-slate-800 dark:text-slate-200 dark:group-hover:bg-white dark:group-hover:text-slate-950">
+                <Icon size={18} />
+              </div>
+            </div>
+            <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+              {card.detail}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }

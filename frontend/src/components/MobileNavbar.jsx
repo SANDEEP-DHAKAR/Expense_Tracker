@@ -1,55 +1,85 @@
 import { useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  ChartNoAxesCombined,
+  FolderKanban,
+  LogOut,
+  Moon,
+  ReceiptText,
+  Sun,
+  WalletCards,
+} from "lucide-react";
 import { AuthContext } from "../context/AuthContextValue";
 import { ThemeContext } from "../context/ThemeContextValue";
+
+const navItems = [
+  { label: "Dashboard", path: "/dashboard", icon: ChartNoAxesCombined },
+  { label: "Expenses", path: "/expenses", icon: ReceiptText },
+  { label: "Categories", path: "/categories", icon: FolderKanban },
+];
 
 export default function MobileNavbar() {
   const navigate = useNavigate();
   const { logout } = useContext(AuthContext);
   const { theme, toggleTheme } = useContext(ThemeContext);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   return (
-    <div className="xl:hidden mb-4 rounded-3xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-      <div className="flex items-center justify-between gap-2">
-        <button
-          onClick={() => navigate("/")}
-          className="flex-1 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-        >
-          Dashboard
-        </button>
-        <button
-          onClick={() => navigate("/expenses")}
-          className="flex-1 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-        >
-          Expenses
-        </button>
-        <button
-          onClick={() => navigate("/categories")}
-          className="flex-1 rounded-2xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-        >
-          Categories
-        </button>
+    <header className="sticky top-0 z-30 -mx-4 mb-5 border-b border-slate-200 bg-slate-50/90 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 xl:hidden dark:border-slate-800 dark:bg-slate-950/90">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-950 text-white dark:bg-white dark:text-slate-950">
+            <WalletCards size={18} />
+          </div>
+          <span className="text-sm font-semibold">Expense</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-rose-100 bg-rose-50 text-rose-700 transition hover:bg-rose-100 dark:border-rose-950 dark:bg-rose-950/40 dark:text-rose-300"
+            aria-label="Logout"
+          >
+            <LogOut size={17} />
+          </button>
+        </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <button
-          className="flex-1 rounded-2xl bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-          onClick={toggleTheme}
-        >
-          {theme === "dark" ? "Light Mode" : "Dark Mode"}
-        </button>
-        <button
-          className="flex-1 rounded-2xl bg-rose-500 px-3 py-2 text-sm font-medium text-white hover:bg-rose-600"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
-      </div>
-    </div>
+      <nav className="mt-3 grid grid-cols-3 gap-2">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex min-h-10 items-center justify-center gap-1.5 rounded-lg px-2 text-xs font-medium transition ${
+                  isActive
+                    ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                    : "bg-white text-slate-600 hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                }`
+              }
+            >
+              <Icon size={15} />
+              <span className="truncate">{item.label}</span>
+            </NavLink>
+          );
+        })}
+      </nav>
+    </header>
   );
 }

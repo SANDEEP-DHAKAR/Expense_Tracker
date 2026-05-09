@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, ReceiptText } from "lucide-react";
 import Layout from "../components/Layout";
 import { PanelSkeleton } from "../components/ui/Skeleton";
 import { PageHeader, controlClass } from "../components/ui/Primitives";
@@ -61,7 +61,7 @@ export default function Expenses() {
         />
 
         {error ? (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          <div className="glass-heavy rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400 animate-slide-up">
             {error}
           </div>
         ) : null}
@@ -69,50 +69,70 @@ export default function Expenses() {
         {loading ? (
           <PanelSkeleton rows={8} />
         ) : (
-          <section className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/90 shadow-sm shadow-slate-200/60 backdrop-blur">
-            <div className="border-b border-slate-200 px-5 py-4">
-              <h2 className="text-base font-semibold text-slate-950">All user expenses</h2>
-              <p className="text-sm text-slate-500">{filteredExpenses.length} matching expenses</p>
+          <section className="card-glass rounded-2xl border border-glass-medium animate-slide-up">
+            <div className="border-b border-glass-medium px-6 py-5">
+              <h2 className="text-lg font-bold text-gradient">All user expenses</h2>
+              <p className="text-sm text-slate-400 mt-1">{filteredExpenses.length} matching expenses</p>
             </div>
 
             {filteredExpenses.length === 0 ? (
-              <div className="px-5 py-12 text-center text-sm text-slate-500">
-                No expenses found.
+              <div className="px-6 py-16 text-center text-sm text-slate-400">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-16 h-16 rounded-full glass-heavy flex items-center justify-center">
+                    <ReceiptText size={24} className="text-slate-500" />
+                  </div>
+                  <span>No expenses found.</span>
+                </div>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[860px] text-left text-sm">
-                  <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <thead className="glass-light border-b border-glass-medium">
                     <tr>
-                      <th className="px-5 py-3 font-medium">User</th>
-                      <th className="px-5 py-3 font-medium">Category</th>
-                      <th className="px-5 py-3 text-right font-medium">Amount</th>
-                      <th className="px-5 py-3 font-medium">Date</th>
-                      <th className="px-5 py-3 font-medium">Note</th>
+                      <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">User</th>
+                      <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">Category</th>
+                      <th className="px-6 py-4 text-right font-semibold text-slate-300 uppercase tracking-wider text-xs">Amount</th>
+                      <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">Date</th>
+                      <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">Note</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {filteredExpenses.map((item) => (
-                      <tr key={item.id} className="transition hover:bg-slate-50">
-                        <td className="max-w-[260px] px-5 py-4">
-                          <p className="truncate font-medium text-slate-900">
-                            {item.user_name || "Unknown user"}
-                          </p>
-                          <p className="mt-1 truncate text-xs text-slate-500">
-                            {item.user_email || "-"}
-                          </p>
+                  <tbody className="divide-y divide-glass-medium">
+                    {filteredExpenses.map((item, index) => (
+                      <tr 
+                        key={item.id} 
+                        className="transition-all duration-200 hover:bg-glass-light hover:border-l-2 hover:border-l-gold-400"
+                        style={{ animationDelay: `${100 + index * 50}ms` }}
+                      >
+                        <td className="max-w-[300px] px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
+                              <span className="text-sm font-bold text-white">
+                                {(item.user_name || "U").charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="truncate font-semibold text-white">
+                                {item.user_name || "Unknown user"}
+                              </p>
+                              <p className="mt-1 truncate text-xs text-slate-400">
+                                {item.user_email || "-"}
+                              </p>
+                            </div>
+                          </div>
                         </td>
-                        <td className="px-5 py-4 text-slate-500">
-                          {item.category_name || "-"}
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center rounded-lg bg-glass-light px-3 py-1 text-xs font-medium text-slate-300">
+                            {item.category_name || "Uncategorized"}
+                          </span>
                         </td>
-                        <td className="px-5 py-4 text-right font-semibold text-slate-950">
+                        <td className="px-6 py-4 text-right font-bold text-gold-400">
                           {formatCurrency(item.amount)}
                         </td>
-                        <td className="px-5 py-4 text-slate-500">
+                        <td className="px-6 py-4 text-slate-400 text-xs">
                           {formatDate(item.expense_date)}
                         </td>
-                        <td className="max-w-[280px] px-5 py-4 text-slate-500">
-                          <span className="block truncate">{item.note || "-"}</span>
+                        <td className="max-w-[320px] px-6 py-4 text-slate-400">
+                          <span className="block truncate text-sm">{item.note || "-"}</span>
                         </td>
                       </tr>
                     ))}

@@ -77,7 +77,7 @@ export default function Users() {
         />
 
         {error ? (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          <div className="glass-heavy rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400 animate-slide-up">
             {error}
           </div>
         ) : null}
@@ -86,47 +86,69 @@ export default function Users() {
           <PanelSkeleton rows={8} />
         ) : (
           <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_400px]">
-            <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200/80 bg-white/90 shadow-sm shadow-slate-200/60 backdrop-blur">
-              <div className="border-b border-slate-200 px-5 py-4">
-                <h2 className="text-base font-semibold text-slate-950">All users</h2>
-                <p className="text-sm text-slate-500">{filteredUsers.length} matching users</p>
+            <section className="card-glass rounded-2xl border border-glass-medium animate-slide-up">
+              <div className="border-b border-glass-medium px-6 py-5">
+                <h2 className="text-lg font-bold text-gradient">All users</h2>
+                <p className="text-sm text-slate-400 mt-1">{filteredUsers.length} matching users</p>
               </div>
 
               {filteredUsers.length === 0 ? (
-                <div className="px-5 py-12 text-center text-sm text-slate-500">
-                  No users found.
+                <div className="px-6 py-16 text-center text-sm text-slate-400">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 rounded-full glass-heavy flex items-center justify-center">
+                      <UserRound size={24} className="text-slate-500" />
+                    </div>
+                    <span>No users found.</span>
+                  </div>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[820px] text-left text-sm">
-                    <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                    <thead className="glass-light border-b border-glass-medium">
                       <tr>
-                        <th className="px-5 py-3 font-medium">User</th>
-                        <th className="px-5 py-3 font-medium">Role</th>
-                        <th className="px-5 py-3 text-right font-medium">Expenses</th>
-                        <th className="px-5 py-3 text-right font-medium">Total spent</th>
-                        <th className="px-5 py-3 font-medium">Joined</th>
-                        <th className="px-5 py-3 text-right font-medium">Action</th>
+                        <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">User</th>
+                        <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">Role</th>
+                        <th className="px-6 py-4 text-right font-semibold text-slate-300 uppercase tracking-wider text-xs">Expenses</th>
+                        <th className="px-6 py-4 text-right font-semibold text-slate-300 uppercase tracking-wider text-xs">Total spent</th>
+                        <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">Joined</th>
+                        <th className="px-6 py-4 text-right font-semibold text-slate-300 uppercase tracking-wider text-xs">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {filteredUsers.map((user) => (
-                        <tr key={user.id} className="transition hover:bg-slate-50">
-                          <td className="max-w-[260px] px-5 py-4">
-                            <p className="truncate font-medium text-slate-900">{user.name}</p>
-                            <p className="mt-1 truncate text-xs text-slate-500">{user.email}</p>
+                    <tbody className="divide-y divide-glass-medium">
+                      {filteredUsers.map((user, index) => (
+                        <tr 
+                          key={user.id} 
+                          className="transition-all duration-200 hover:bg-glass-light hover:border-l-2 hover:border-l-gold-400"
+                          style={{ animationDelay: `${100 + index * 50}ms` }}
+                        >
+                          <td className="max-w-[300px] px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
+                                <span className="text-sm font-bold text-white">
+                                  {(user.name || "U").charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="truncate font-semibold text-white">{user.name}</p>
+                                <p className="mt-1 truncate text-xs text-slate-400">{user.email}</p>
+                              </div>
+                            </div>
                           </td>
-                          <td className="px-5 py-4 text-slate-500">{user.role || "user"}</td>
-                          <td className="px-5 py-4 text-right text-slate-700">{user.expensesCount}</td>
-                          <td className="px-5 py-4 text-right font-semibold text-slate-950">
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center rounded-lg bg-glass-light px-2 py-1 text-xs font-medium text-slate-300">
+                              {user.role || "user"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right text-slate-300">{user.expensesCount}</td>
+                          <td className="px-6 py-4 text-right font-bold text-gold-400">
                             {formatCurrency(user.totalSpent)}
                           </td>
-                          <td className="px-5 py-4 text-slate-500">{formatDate(user.created_at)}</td>
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-6 py-4 text-slate-400 text-xs">{formatDate(user.created_at)}</td>
+                          <td className="px-6 py-4 text-right">
                             <button
                               type="button"
                               onClick={() => openUser(user.id)}
-                              className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800"
+                              className="btn-primary inline-flex h-8 items-center justify-center rounded-lg px-3 text-xs font-semibold text-white transition-all duration-300 hover:scale-[1.05]"
                             >
                               View
                             </button>
@@ -139,14 +161,14 @@ export default function Users() {
               )}
             </section>
 
-            <aside className="h-fit rounded-xl border border-slate-200/80 bg-white/90 p-5 shadow-sm shadow-slate-200/60 backdrop-blur">
+            <aside className="card-glass h-fit rounded-2xl border border-glass-medium p-6 animate-slide-up" style={{ animationDelay: '200ms' }}>
               {!selectedUser ? (
                 <div className="flex min-h-64 flex-col items-center justify-center text-center">
-                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-                    <UserRound size={19} />
+                  <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl glass-heavy">
+                    <UserRound size={28} className="text-slate-500" />
                   </div>
-                  <p className="text-sm font-medium text-slate-800">No user selected</p>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="text-sm font-semibold text-slate-300">No user selected</p>
+                  <p className="mt-2 text-sm text-slate-400">
                     Select a user to review details.
                   </p>
                 </div>
@@ -157,13 +179,15 @@ export default function Users() {
               {selectedUserDetails && !detailLoading ? (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-950">
+                    <h2 className="text-xl font-bold text-gradient">
                       {selectedUserDetails.user?.name}
                     </h2>
-                    <p className="text-sm text-slate-500">{selectedUserDetails.user?.email}</p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Role: {selectedUserDetails.user?.role || "user"}
-                    </p>
+                    <p className="text-sm text-slate-400 mt-1">{selectedUserDetails.user?.email}</p>
+                    <div className="mt-2 inline-flex items-center rounded-lg bg-glass-light px-3 py-1">
+                      <span className="text-xs font-medium text-gold-400">
+                        Role: {selectedUserDetails.user?.role || "user"}
+                      </span>
+                    </div>
                   </div>
 
                   <DetailList
@@ -205,13 +229,15 @@ export default function Users() {
 function DetailList({ title, empty, items }) {
   return (
     <div>
-      <h3 className="mb-2 text-sm font-semibold text-slate-900">{title}</h3>
+      <h3 className="mb-3 text-sm font-bold text-gold-400 uppercase tracking-wider">{title}</h3>
       {items.length === 0 ? (
-        <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-500">{empty}</p>
+        <div className="glass-light rounded-lg px-4 py-3 text-sm text-slate-400 text-center">
+          {empty}
+        </div>
       ) : (
-        <ul className="max-h-40 space-y-1 overflow-y-auto text-sm">
+        <ul className="max-h-48 space-y-2 overflow-y-auto text-sm">
           {items.map((item) => (
-            <li key={item.key} className="rounded-lg bg-slate-50 px-3 py-2 text-slate-700">
+            <li key={item.key} className="glass-light rounded-lg px-4 py-3 text-slate-300 transition-all duration-200 hover:bg-glass-medium hover:border-l-2 hover:border-l-gold-400">
               {item.label}
             </li>
           ))}

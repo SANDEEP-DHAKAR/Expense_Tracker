@@ -43,32 +43,35 @@ export default function Login() {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 text-slate-950">
-      <section className="w-full max-w-md rounded-xl border border-slate-200/80 bg-white/90 p-6 shadow-sm shadow-slate-200/60 backdrop-blur sm:p-8">
+    <main className="flex min-h-screen items-center justify-center px-4 py-10 text-slate-100">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-950 via-dark-950 to-primary-900" />
+      <div className="absolute inset-0 bg-gradient-to-t from-gold-500/5 to-transparent" />
+      
+      <section className="relative w-full max-w-md glass-heavy rounded-2xl border border-glass-medium p-8 shadow-glass animate-fade-in">
         <div className="mb-8">
-          <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-950 text-white">
-            <ShieldCheck size={21} />
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-primary-800 text-white shadow-green-glow animate-float">
+            <ShieldCheck size={28} />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">Admin sign in</h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <h1 className="text-3xl font-bold tracking-tight text-gradient">Admin sign in</h1>
+          <p className="mt-3 text-sm text-slate-400 leading-relaxed">
             Access platform analytics, users, and transaction oversight.
           </p>
         </div>
 
         {error ? (
-          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mb-6 glass-heavy rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400 animate-slide-up">
             {error}
           </div>
         ) : null}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="space-y-6" onSubmit={handleSubmit}>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-700">
+            <span className="mb-2 block text-sm font-semibold text-slate-300">
               Email
             </span>
             <input
               type="email"
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-100"
+              className="w-full rounded-xl border border-glass-medium glass-heavy px-4 py-3 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-gold-500/50 focus:ring-2 focus:ring-gold-500/20"
               placeholder="admin@example.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -77,13 +80,13 @@ export default function Login() {
           </label>
 
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-700">
+            <span className="mb-2 block text-sm font-semibold text-slate-300">
               Password
             </span>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-100"
+                className="w-full rounded-xl border border-glass-medium glass-heavy px-4 py-3 pr-12 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-gold-500/50 focus:ring-2 focus:ring-gold-500/20"
                 placeholder="Your password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -92,7 +95,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword((current) => !current)}
-                className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-slate-400 transition-all duration-200 hover:bg-glass-light hover:text-white"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -103,7 +106,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-primary inline-flex h-12 w-full items-center justify-center rounded-xl px-4 text-sm font-semibold text-white shadow-gold-glow transition-all duration-300 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>

@@ -17,6 +17,7 @@ export default function Expenses() {
       try {
         setLoading(true);
         setError("");
+
         const res = await getAdminExpenses();
         setExpenses(res?.data?.data || []);
       } catch (err) {
@@ -30,13 +31,21 @@ export default function Expenses() {
   }, []);
 
   const filteredExpenses = useMemo(() => {
-    const q = search.toLowerCase();
-    return expenses.filter((item) => (
-      item?.user_name?.toLowerCase().includes(q) ||
-      item?.user_email?.toLowerCase().includes(q) ||
-      item?.category_name?.toLowerCase().includes(q) ||
-      item?.note?.toLowerCase().includes(q)
-    ));
+    const q = search.toLowerCase().trim();
+
+    return expenses.filter((item) => {
+      const name = (item?.user_name || "").toLowerCase();
+      const email = (item?.user_email || "").toLowerCase();
+      const category = (item?.category_name || "").toLowerCase();
+      const note = (item?.note || "").toLowerCase();
+
+      return (
+        name.includes(q) ||
+        email.includes(q) ||
+        category.includes(q) ||
+        note.includes(q)
+      );
+    });
   }, [expenses, search]);
 
   return (
@@ -48,13 +57,16 @@ export default function Expenses() {
           description="Review the latest expenses across all users."
           actions={
             <label className="relative w-full lg:w-96">
-              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={16}
+              />
               <input
                 type="text"
                 placeholder="Search expenses"
                 className={`h-10 w-full pl-9 pr-3 ${controlClass}`}
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </label>
           }
@@ -71,8 +83,12 @@ export default function Expenses() {
         ) : (
           <section className="card-glass rounded-2xl border border-glass-medium animate-slide-up">
             <div className="border-b border-glass-medium px-6 py-5">
-              <h2 className="text-lg font-bold text-gradient">All user expenses</h2>
-              <p className="text-sm text-slate-400 mt-1">{filteredExpenses.length} matching expenses</p>
+              <h2 className="text-lg font-bold text-gradient">
+                All user expenses
+              </h2>
+              <p className="text-sm text-slate-400 mt-1">
+                {filteredExpenses.length} matching expenses
+              </p>
             </div>
 
             {filteredExpenses.length === 0 ? (
@@ -89,50 +105,66 @@ export default function Expenses() {
                 <table className="w-full min-w-[860px] text-left text-sm">
                   <thead className="glass-light border-b border-glass-medium">
                     <tr>
-                      <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">User</th>
-                      <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">Category</th>
-                      <th className="px-6 py-4 text-right font-semibold text-slate-300 uppercase tracking-wider text-xs">Amount</th>
-                      <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">Date</th>
-                      <th className="px-6 py-4 font-semibold text-slate-300 uppercase tracking-wider text-xs">Note</th>
+                      <th className="px-6 py-4 text-xs text-slate-300">
+                        User
+                      </th>
+                      <th className="px-6 py-4 text-xs text-slate-300">
+                        Category
+                      </th>
+                      <th className="px-6 py-4 text-xs text-right text-slate-300">
+                        Amount
+                      </th>
+                      <th className="px-6 py-4 text-xs text-slate-300">
+                        Date
+                      </th>
+                      <th className="px-6 py-4 text-xs text-slate-300">
+                        Note
+                      </th>
                     </tr>
                   </thead>
+
                   <tbody className="divide-y divide-glass-medium">
                     {filteredExpenses.map((item, index) => (
-                      <tr 
-                        key={item.id} 
-                        className="transition-all duration-200 hover:bg-glass-light hover:border-l-2 hover:border-l-gold-400"
-                        style={{ animationDelay: `${100 + index * 50}ms` }}
+                      <tr
+                        key={item.id}
+                        className="hover:bg-glass-light transition"
                       >
-                        <td className="max-w-[300px] px-6 py-4">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
                               <span className="text-sm font-bold text-white">
-                                {(item.user_name || "U").charAt(0).toUpperCase()}
+                                {(item?.user_name || "U")
+                                  .charAt(0)
+                                  .toUpperCase()}
                               </span>
                             </div>
                             <div>
-                              <p className="truncate font-semibold text-white">
-                                {item.user_name || "Unknown user"}
+                              <p className="font-semibold text-white">
+                                {item?.user_name || "Unknown user"}
                               </p>
-                              <p className="mt-1 truncate text-xs text-slate-400">
-                                {item.user_email || "-"}
+                              <p className="text-xs text-slate-400">
+                                {item?.user_email || "-"}
                               </p>
                             </div>
                           </div>
                         </td>
+
                         <td className="px-6 py-4">
-                          <span className="inline-flex items-center rounded-lg bg-glass-light px-3 py-1 text-xs font-medium text-slate-300">
-                            {item.category_name || "Uncategorized"}
+                          <span className="inline-flex rounded-lg bg-glass-light px-3 py-1 text-xs text-slate-300">
+                            {item?.category_name || "Uncategorized"}
                           </span>
                         </td>
+
                         <td className="px-6 py-4 text-right font-bold text-gold-400">
-                          {formatCurrency(item.amount)}
+                          {formatCurrency(item?.amount || 0)}
                         </td>
-                        <td className="px-6 py-4 text-slate-400 text-xs">
-                          {formatDate(item.expense_date)}
+
+                        <td className="px-6 py-4 text-xs text-slate-400">
+                          {formatDate(item?.expense_date)}
                         </td>
-                        <td className="max-w-[320px] px-6 py-4 text-slate-400">
-                          <span className="block truncate text-sm">{item.note || "-"}</span>
+
+                        <td className="px-6 py-4 text-slate-400">
+                          {item?.note || "-"}
                         </td>
                       </tr>
                     ))}

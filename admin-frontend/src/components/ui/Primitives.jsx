@@ -1,20 +1,20 @@
 export function PageHeader({ eyebrow, title, description, actions }) {
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-sm shadow-slate-200/60 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 sm:p-6">
+    <section className="glass-heavy rounded-2xl border border-glass-medium p-6 shadow-glass-sm sm:p-8 animate-fade-in">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           {eyebrow ? (
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-400">
               {eyebrow}
             </p>
           ) : null}
 
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gradient sm:text-4xl">
             {title}
           </h1>
 
           {description ? (
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
               {description}
             </p>
           ) : null}
@@ -35,18 +35,18 @@ export function PageHeader({ eyebrow, title, description, actions }) {
 ========================= */
 
 export const controlClass =
-  "min-w-0 appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500";
+  "min-w-0 appearance-none rounded-xl border border-glass-medium glass-heavy px-4 py-3 text-sm text-white outline-none transition-all duration-300 placeholder:text-slate-400 focus:border-gold-500/50 focus:ring-2 focus:ring-gold-500/20 disabled:cursor-not-allowed disabled:opacity-60";
 
 /* =========================
    PRIMARY BUTTON
 ========================= */
 
 export const primaryButtonClass =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200";
+  "btn-primary inline-flex h-11 items-center justify-center gap-2 rounded-xl px-6 text-sm font-semibold text-white shadow-gold-glow transition-all duration-300 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60";
 
 /* =========================
    SECONDARY BUTTON
 ========================= */
 
 export const secondaryButtonClass =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-all duration-200 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800";
+  "btn-secondary inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-glass-medium glass-heavy px-4 text-sm font-medium text-slate-300 transition-all duration-300 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60";

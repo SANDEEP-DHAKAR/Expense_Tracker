@@ -29,7 +29,7 @@ export default function StatsCards() {
   const cards = [
     {
       title: "This month",
-      value: formatCurrency(monthly, true),
+      value: new Intl.NumberFormat("en-IN").format(monthly),
       detail: "Current month spend",
       icon: CalendarDays,
 
@@ -48,7 +48,7 @@ export default function StatsCards() {
 
     {
       title: "All-time spend",
-      value: formatCurrency(total, true),
+      value: new Intl.NumberFormat("en-IN").format(total),
       detail: "Across all expenses",
       icon: ArrowDownRight,
 

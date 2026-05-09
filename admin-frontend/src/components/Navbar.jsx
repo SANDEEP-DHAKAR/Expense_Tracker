@@ -66,10 +66,9 @@ export default function Navbar() {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `group flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-medium transition-all duration-300 ${
-                  isActive
-                    ? "bg-gradient-to-r from-primary-600/20 to-primary-700/20 text-primary-100 border border-primary-500/30 shadow-gold-glow"
-                    : "glass-light text-slate-400 hover:text-white hover:bg-glass-light hover:border hover:border-gold-500/20"
+                `group flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-medium transition-all duration-300 ${isActive
+                  ? "bg-gradient-to-r from-primary-600/20 to-primary-700/20 text-primary-100 border border-primary-500/30 shadow-gold-glow"
+                  : "glass-light text-slate-400 hover:text-white hover:bg-glass-light hover:border hover:border-gold-500/20"
                 }`
               }
             >

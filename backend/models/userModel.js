@@ -21,4 +21,11 @@ const findUserById = async (id) => {
     return rows[0];
 };
 
-module.exports = { createUser, findUserByEmail, findUserById };
+// Update User Password
+const updateUserPassword = async (id, password) => {
+    const query = 'UPDATE users SET password = ? WHERE id = ?';
+    const [result] = await db.query(query, [password, id]);
+    return result;
+};
+
+module.exports = { createUser, findUserByEmail, findUserById, updateUserPassword };

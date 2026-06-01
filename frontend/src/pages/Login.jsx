@@ -150,9 +150,19 @@ export default function Login() {
 
           {/* Password */}
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-200">
-              Password
-            </span>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="block text-sm font-medium text-slate-200">
+                Password
+              </span>
+
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-xs font-medium text-green-300 transition hover:text-green-200 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
 
             <div className="relative">
               <input

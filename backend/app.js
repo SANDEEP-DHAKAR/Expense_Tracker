@@ -46,8 +46,6 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: "200kb" }));
 app.use(express.urlencoded({ extended: true, limit: "200kb" }));
 
-app.use("/api/auth", apiLimiter);
-
 app.get("/", (req, res) => {
   res.send("Expense Tracker API is running");
 });
@@ -70,7 +68,7 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/auth", apiLimiter, require("./routes/authRoutes"));
 app.use("/api/protected", require("./routes/protectedRoutes"));
 app.use("/api/expenses", require("./routes/expenseRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));

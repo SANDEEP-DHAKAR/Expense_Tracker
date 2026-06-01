@@ -9,5 +9,9 @@ export const loginUser = (data) => api.post("/auth/login", data);
 // 🔁 Refresh token
 export const refreshToken = (data) => api.post("/auth/refresh", data);
 
+export const forgotPassword = (data) => api.post("/auth/forgot-password", data);
+
+export const resetPassword = (data) => api.post("/auth/reset-password", data);
+
 // 🚪 Logout
 export const logoutUser = (data) => api.post("/auth/logout", data);

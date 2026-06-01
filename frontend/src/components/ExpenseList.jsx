@@ -242,21 +242,21 @@ export default function ExpenseList({
       {/* HEADER */}
       <div className="border-b border-emerald-100/60 bg-gradient-to-r from-emerald-50/70 to-transparent px-5 py-5 dark:border-emerald-900/20 dark:from-emerald-950/10">
 
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-col gap-0 lg:flex-row lg:items-center lg:justify-between">
 
           {/* TITLE */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-0">
 
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-700 shadow-lg shadow-emerald-500/30">
+            <div className="flex h-14 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-green-700 shadow-lg shadow-emerald-500/30">
               <ReceiptText
-                size={25}
+                size={28}
                 className="text-white"
               />
             </div>
 
             <div>
               <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
-                Expense History
+                History
               </h2>
 
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -269,7 +269,7 @@ export default function ExpenseList({
           </div>
 
           {/* FILTERS */}
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+          <div className="flex flex-col gap-0 w-full lg:flex-row lg:items-center lg:justify-end lg:w-auto">
 
             <label className="relative">
               <Search
@@ -284,7 +284,7 @@ export default function ExpenseList({
                 onChange={(e) =>
                   setSearch(e.target.value)
                 }
-                className={`h-11 w-full rounded-2xl border-emerald-200/70 bg-white/80 pl-10 pr-4 shadow-sm backdrop-blur lg:w-72 dark:border-emerald-900/30 dark:bg-slate-900/70 ${controlClass}`}
+                className={`h-11 w-full max-w-[420px] rounded-2xl border-emerald-200/70 bg-white/80 pl-10 pr-4 shadow-sm backdrop-blur lg:w-72 dark:border-emerald-900/30 dark:bg-slate-900/70 ${controlClass}`}
               />
             </label>
 
@@ -294,7 +294,7 @@ export default function ExpenseList({
               onChange={(e) =>
                 setDateFilter(e.target.value)
               }
-              className={`h-11 rounded-2xl border-emerald-200/70 bg-white/80 px-4 shadow-sm backdrop-blur dark:border-emerald-900/30 dark:bg-slate-900/70 ${controlClass}`}
+              className={`h-11 w-full max-w-[160px] rounded-2xl border-emerald-200/70 bg-white/80 px-4 shadow-sm backdrop-blur lg:w-40 dark:border-emerald-900/30 dark:bg-slate-900/70 ${controlClass}`}
             />
 
             <button
@@ -337,7 +337,7 @@ export default function ExpenseList({
       ) : (
         <div className="overflow-x-auto">
 
-          <table className="w-full min-w-[760px]">
+          <table className="w-full min-w-full table-fixed">
 
             <thead className="bg-emerald-50/60 dark:bg-emerald-950/10">
               <tr className="text-xs uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
@@ -462,7 +462,7 @@ export default function ExpenseList({
                       </>
                     ) : (
                       <>
-                        <td className="max-w-[320px] px-6 py-5">
+                        <td className="max-w-[320px] min-w-0 px-6 py-5">
 
                           <div className="flex items-center gap-4">
 

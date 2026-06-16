@@ -9,7 +9,7 @@ if (!DATABASE_URL) {
     process.exit(1);
 }
 
-// ✅ connection pool using Railway URL
+// ✅ connection pool using local database URL from environment
 const db = mysql.createPool({
     uri: DATABASE_URL,
     waitForConnections: true,
@@ -17,6 +17,6 @@ const db = mysql.createPool({
     queueLimit: 0,
 }).promise();
 
-console.log('✅ Database connected using Railway URL');
+console.log('✅ Database connected using local DATABASE_URL');
 
 module.exports = db;

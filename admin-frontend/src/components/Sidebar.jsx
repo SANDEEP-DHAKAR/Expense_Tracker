@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { BarChart3, ReceiptText, ShieldCheck, Users } from "lucide-react";
 
 const items = [
@@ -8,6 +8,7 @@ const items = [
 ];
 
 export default function Sidebar() {
+  const { pathname } = useLocation();
   return (
     <aside className="sidebar-gradient fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-glass-medium shadow-glass xl:flex xl:flex-col">
       <div className="px-6 py-6">
@@ -25,18 +26,17 @@ export default function Sidebar() {
       <nav className="flex-1 px-4 space-y-2">
         {items.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.path;
 
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) =>
-                `group relative flex min-h-12 items-center gap-4 rounded-xl px-4 text-sm font-medium transition-all duration-300 ${
-                  isActive
-                    ? "bg-gradient-to-r from-primary-600/20 to-primary-700/20 text-primary-100 border border-primary-500/30 shadow-gold-glow"
-                    : "text-slate-400 hover:text-white hover:bg-glass-light hover:border hover:border-gold-500/20"
-                }`
-              }
+              className={`group relative flex min-h-12 items-center gap-4 rounded-xl px-4 text-sm font-medium transition-all duration-300 ${
+                isActive
+                  ? "bg-gradient-to-r from-primary-600/20 to-primary-700/20 text-primary-100 border border-primary-500/30 shadow-gold-glow"
+                  : "text-slate-400 hover:text-white hover:bg-glass-light hover:border hover:border-gold-500/20"
+              }`}
             >
               <div className={`transition-all duration-300 ${isActive ? 'text-gold-400' : 'text-slate-500 group-hover:text-gold-400'}`}>
                 <Icon size={20} />

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { BarChart3, LogOut, ReceiptText, ShieldCheck, Users, User } from "lucide-react";
 import { AdminAuthContext } from "../context/AdminAuthContextValue";
 
@@ -11,6 +11,7 @@ const mobileItems = [
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { logout, adminUser } = useContext(AdminAuthContext);
 
   const handleLogout = async () => {
@@ -60,17 +61,16 @@ export default function Navbar() {
       <nav className="mt-4 grid grid-cols-3 gap-2 overflow-hidden xl:hidden">
         {mobileItems.map((item) => {
           const Icon = item.icon;
+          const isActive = pathname === item.path;
 
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              className={({ isActive }) =>
-                `group flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-medium transition-all duration-300 ${isActive
-                  ? "bg-gradient-to-r from-primary-600/20 to-primary-700/20 text-primary-100 border border-primary-500/30 shadow-gold-glow"
-                  : "glass-light text-slate-400 hover:text-white hover:bg-glass-light hover:border hover:border-gold-500/20"
-                }`
-              }
+              className={`group flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-3 text-xs font-medium transition-all duration-300 ${isActive
+                ? "bg-gradient-to-r from-primary-600/20 to-primary-700/20 text-primary-100 border border-primary-500/30 shadow-gold-glow"
+                : "glass-light text-slate-400 hover:text-white hover:bg-glass-light hover:border hover:border-gold-500/20"
+              }`}
             >
               <div className={`transition-all duration-300 ${isActive ? 'text-gold-400' : 'text-slate-500 group-hover:text-gold-400'}`}>
                 <Icon size={16} />

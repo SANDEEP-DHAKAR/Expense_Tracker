@@ -1,16 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Plus,
-  RefreshCcw,
-  Sparkles,
-} from "lucide-react";
+import { Plus, RefreshCcw, Sparkles } from "lucide-react";
 
 import NotificationBell from "../NotificationBell";
 import NotificationsPanel from "../NotificationsPanel";
-
-import {
-  primaryButtonClass,
-} from "../ui/Primitives";
 
 import { useDashboard } from "../../context/DashboardContextValue";
 
@@ -22,18 +14,25 @@ export default function Header() {
     loading,
   } = useDashboard();
 
-  const [showNotifications, setShowNotifications] =
-    useState(false);
-
+  const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef(null);
 
-  const scrollToQuickAdd = () => {
-    document
-      .getElementById("quick-add-expense")
-      ?.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+  const scrollToAddExpense = () => {
+    const el = document.getElementById("quick-add-expense");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      const input = document.getElementById("quick-add-note");
+      if (input) {
+        setTimeout(() => {
+          input.focus();
+          input.select?.();
+        }, 350);
+      }
+      el.classList.add("ring-4", "ring-emerald-500/50");
+      setTimeout(() => {
+        el.classList.remove("ring-4", "ring-emerald-500/50");
+      }, 1600);
+    }
   };
 
   /* OUTSIDE CLICK CLOSE */
@@ -41,40 +40,27 @@ export default function Header() {
     function handleClickOutside(event) {
       if (
         notificationRef.current &&
-        !notificationRef.current.contains(
-          event.target
-        )
+        !notificationRef.current.contains(event.target)
       ) {
         setShowNotifications(false);
       }
     }
 
-    document.addEventListener(
-      "mousedown",
-      handleClickOutside
-    );
-
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   return (
     <div className="relative z-20 rounded-[32px] border border-emerald-100/70 bg-gradient-to-br from-white via-emerald-50/40 to-green-100/20 p-5 shadow-[0_25px_80px_rgba(16,185,129,0.12)] backdrop-blur-xl dark:border-emerald-900/30 dark:from-slate-950 dark:via-slate-950 dark:to-emerald-950/10 sm:p-7">
-      
       {/* BG EFFECTS */}
       <div className="pointer-events-none absolute -left-16 -top-16 h-44 w-44 rounded-full bg-emerald-400/20 blur-3xl" />
-
       <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-full bg-green-500/10 blur-3xl" />
 
       <div className="relative z-10 flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-        
         {/* LEFT */}
         <div className="max-w-2xl">
-          
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-200/70 bg-white/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 shadow-sm backdrop-blur dark:border-emerald-900/30 dark:bg-slate-900/60 dark:text-emerald-300">
             <Sparkles size={13} />
             Overview
@@ -85,36 +71,24 @@ export default function Header() {
           </h1>
 
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400 sm:text-base">
-            Monitor your spending, budgets,
-            transactions and financial
-            activity with a premium experience.
+            Monitor your spending, budgets, transactions and financial activity with a premium experience.
           </p>
         </div>
 
         {/* RIGHT ACTIONS */}
         <div className="relative flex flex-wrap items-center gap-3">
-          
           {/* NOTIFICATION */}
-          <div
-            className="relative"
-            ref={notificationRef}
-          >
+          <div className="relative" ref={notificationRef}>
             <NotificationBell
               count={notificationsCount}
-              onClick={() =>
-                setShowNotifications(
-                  (current) => !current
-                )
-              }
+              onClick={() => setShowNotifications((current) => !current)}
             />
 
             {showNotifications && (
               <div className="absolute right-0 top-14 z-[99999]">
                 <NotificationsPanel
                   notifications={notifications}
-                  onClose={() =>
-                    setShowNotifications(false)
-                  }
+                  onClose={() => setShowNotifications(false)}
                   onRead={refresh}
                 />
               </div>
@@ -130,21 +104,16 @@ export default function Header() {
           >
             <RefreshCcw
               size={17}
-              className={
-                loading
-                  ? "animate-spin"
-                  : ""
-              }
+              className={loading ? "animate-spin" : ""}
             />
-
             Refresh
           </button>
 
-          {/* ADD */}
+          {/* ADD EXPENSE BUTTON (SCROLLS & FOCUSES FORM) */}
           <button
             type="button"
-            onClick={scrollToQuickAdd}
-            className={`${primaryButtonClass} h-12 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-700 px-5 shadow-xl shadow-emerald-500/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-emerald-500/30`}
+            onClick={scrollToAddExpense}
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-700 px-5 text-sm font-semibold text-white shadow-xl shadow-emerald-500/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-emerald-500/30 active:scale-[0.98]"
           >
             <Plus size={17} />
             Add Expense

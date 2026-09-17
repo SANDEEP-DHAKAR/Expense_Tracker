@@ -53,19 +53,30 @@ const getRecentExpenses = async (userId) => {
     return rows;
 };
 
-// 📊 MONTHLY GRAPH DATA (NULL SAFE)
+// 📊 MONTHLY GRAPH DATA (WITH BUDGET & SAVINGS COMPARISON)
 const getMonthlyData = async (userId) => {
     const query = `
         SELECT 
-            DATE_FORMAT(expense_date, '%Y-%m') AS month,
-            COALESCE(SUM(amount), 0) AS total
-        FROM expenses
-        WHERE user_id = ?
-        GROUP BY month
-        ORDER BY month ASC
+            all_months.month,
+            COALESCE(SUM(e.amount), 0) AS total,
+            COALESCE(b.monthly_limit, 0) AS budget,
+            CASE 
+                WHEN COALESCE(b.monthly_limit, 0) > 0 
+                THEN (b.monthly_limit - COALESCE(SUM(e.amount), 0))
+                ELSE 0 
+            END AS savings
+        FROM (
+            SELECT DISTINCT DATE_FORMAT(expense_date, '%Y-%m') AS month FROM expenses WHERE user_id = ?
+            UNION
+            SELECT DISTINCT month FROM budgets WHERE user_id = ?
+        ) all_months
+        LEFT JOIN budgets b ON b.month = all_months.month AND b.user_id = ?
+        LEFT JOIN expenses e ON DATE_FORMAT(e.expense_date, '%Y-%m') = all_months.month AND e.user_id = ?
+        GROUP BY all_months.month, b.monthly_limit
+        ORDER BY all_months.month ASC
     `;
 
-    const [rows] = await db.query(query, [userId]);
+    const [rows] = await db.query(query, [userId, userId, userId, userId]);
     return rows;
 };
 

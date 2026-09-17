@@ -33,7 +33,7 @@ const getExpenses = async (
     }
 ) => {
     const offset = (Number(page) > 1 ? Number(page) - 1 : 0) * Number(limit);
-    const pageSize = Math.min(Math.max(Number(limit) || 10, 1), 100);
+    const pageSize = Math.min(Math.max(Number(limit) || 10, 1), 1000);
 
     const allowedSortFields = ['expense_date', 'amount', 'created_at'];
     const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'expense_date';

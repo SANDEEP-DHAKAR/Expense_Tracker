@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthContext } from "../context/AuthContextValue";
 import Categories from "../pages/Categories";
+import Budgets from "../pages/Budgets";
 import Dashboard from "../pages/Dashboard";
 import Expenses from "../pages/Expenses";
 import Login from "../pages/Login";
@@ -46,6 +47,14 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute>
               <Expenses />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/budgets"
+          element={
+            <ProtectedRoute>
+              <Budgets />
             </ProtectedRoute>
           }
         />

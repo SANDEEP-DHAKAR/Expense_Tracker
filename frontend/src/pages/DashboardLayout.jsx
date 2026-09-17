@@ -113,20 +113,17 @@ export default function DashboardLayout() {
 
               {/* RIGHT SIDE */}
               <aside className="min-w-0 space-y-6">
-                
-                {/* BUDGET */}
+                {/* 1. QUICK ADD EXPENSE */}
+                <AddExpenseQuick />
+
+                {/* 2. MONTHLY BUDGET */}
                 <div className="group overflow-hidden rounded-[32px] border border-white/20 bg-white/75 shadow-[0_20px_60px_rgba(16,185,129,0.08)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(16,185,129,0.14)] dark:border-slate-800 dark:bg-slate-900/80">
                   <BudgetSection />
                 </div>
 
-                {/* CATEGORY BREAKDOWN */}
+                {/* 3. CATEGORY BREAKDOWN */}
                 <div className="group overflow-hidden rounded-[32px] border border-white/20 bg-white/75 shadow-[0_20px_60px_rgba(16,185,129,0.08)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(16,185,129,0.14)] dark:border-slate-800 dark:bg-slate-900/80">
                   <CategoryBreakdown />
-                </div>
-
-                {/* QUICK ADD */}
-                <div className="group overflow-hidden rounded-[32px] border border-white/20 bg-white/75 shadow-[0_20px_60px_rgba(16,185,129,0.08)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(16,185,129,0.14)] dark:border-slate-800 dark:bg-slate-900/80">
-                  <AddExpenseQuick />
                 </div>
               </aside>
             </div>

@@ -39,13 +39,12 @@ export default function Expenses() {
     }
   }, []);
 
-  // INITIAL LOAD (safe unmount handling)
+  // INITIAL LOAD
   useEffect(() => {
     let mounted = true;
 
     const loadData = async () => {
       setLoading(true);
-
       try {
         const [expenseRes, categoryRes] = await Promise.all([
           getExpenses({ limit: 1000 }),
@@ -53,7 +52,6 @@ export default function Expenses() {
         ]);
 
         if (!mounted) return;
-
         setExpenses(expenseRes?.data?.data || []);
         setCategories(categoryRes?.data?.data || []);
       } catch (err) {
@@ -92,25 +90,26 @@ export default function Expenses() {
         />
 
         {/* CONTENT */}
-        <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)] 2xl:grid-cols-[400px_minmax(0,1fr)]">
-          
+        <div className="grid items-start gap-6 xl:grid-cols-[380px_minmax(0,1fr)] 2xl:grid-cols-[420px_minmax(0,1fr)]">
           {/* ADD EXPENSE */}
-          <div className="overflow-hidden rounded-[32px] border border-white/20 bg-white/75 shadow-[0_20px_60px_rgba(16,185,129,0.08)] backdrop-blur-2xl transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_30px_80px_rgba(16,185,129,0.14)] dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="w-full">
             <AddExpense
               refresh={fetchExpenses}
               categories={categories}
+              compact
             />
           </div>
 
           {/* LIST / SKELETON */}
-          <div className="overflow-hidden rounded-[32px] border border-white/20 bg-white/75 shadow-[0_20px_60px_rgba(16,185,129,0.08)] backdrop-blur-2xl transition-all duration-500 hover:shadow-[0_30px_80px_rgba(16,185,129,0.14)] dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="min-w-0">
             {loading ? (
-              <div className="p-1">
+              <div className="overflow-hidden rounded-[30px] border border-emerald-100/70 bg-white/70 p-6 shadow-[0_20px_80px_rgba(16,185,129,0.08)] backdrop-blur-2xl dark:border-emerald-900/30 dark:bg-slate-950/70">
                 <PanelSkeleton rows={8} />
               </div>
             ) : (
               <ExpenseList
                 expenses={expenses}
+                categories={categories}
                 refresh={fetchExpenses}
               />
             )}

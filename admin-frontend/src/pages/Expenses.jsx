@@ -50,21 +50,21 @@ export default function Expenses() {
 
   return (
     <Layout>
-      <div className="space-y-5">
+      <div className="space-y-6">
         <PageHeader
           eyebrow="Transactions"
-          title="Platform expenses"
-          description="Review the latest expenses across all users."
+          title="Platform Expenses"
+          description="Review cross-user expense activity, categories, and financial logs."
           actions={
             <label className="relative w-full lg:w-96">
               <Search
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                 size={16}
               />
               <input
                 type="text"
-                placeholder="Search expenses"
-                className={`h-10 w-full pl-9 pr-3 ${controlClass}`}
+                placeholder="Search by user, category, or note..."
+                className={`h-10 w-full pl-9 pr-3.5 ${controlClass}`}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -73,7 +73,7 @@ export default function Expenses() {
         />
 
         {error ? (
-          <div className="glass-heavy rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400 animate-slide-up">
+          <div className="glass-heavy rounded-2xl border border-rose-500/20 bg-rose-500/10 p-4 text-xs sm:text-sm text-rose-300 animate-slide-up">
             {error}
           </div>
         ) : null}
@@ -81,68 +81,72 @@ export default function Expenses() {
         {loading ? (
           <PanelSkeleton rows={8} />
         ) : (
-          <section className="card-glass rounded-2xl border border-glass-medium animate-slide-up">
-            <div className="border-b border-glass-medium px-6 py-5">
-              <h2 className="text-lg font-bold text-gradient">
-                All user expenses
-              </h2>
-              <p className="text-sm text-slate-400 mt-1">
-                {filteredExpenses.length} matching expenses
-              </p>
+          <section className="card-glass rounded-[28px] border border-white/[0.08] animate-slide-up overflow-hidden">
+            <div className="border-b border-white/[0.06] bg-slate-900/40 px-6 py-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-white sm:text-lg">
+                  All User Expenses
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {filteredExpenses.length} matching transactions
+                </p>
+              </div>
+
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                {filteredExpenses.length} Total
+              </span>
             </div>
 
             {filteredExpenses.length === 0 ? (
-              <div className="px-6 py-16 text-center text-sm text-slate-400">
+              <div className="px-6 py-16 text-center text-xs sm:text-sm text-slate-400">
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-16 h-16 rounded-full glass-heavy flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-2xl glass-heavy flex items-center justify-center">
                     <ReceiptText size={24} className="text-slate-500" />
                   </div>
-                  <span>No expenses found.</span>
+                  <span>No expenses found matching query.</span>
                 </div>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[860px] text-left text-sm">
-                  <thead className="glass-light border-b border-glass-medium">
+                  <thead className="border-b border-white/[0.06] bg-slate-900/60">
                     <tr>
-                      <th className="px-6 py-4 text-xs text-slate-300">
+                      <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         User
                       </th>
-                      <th className="px-6 py-4 text-xs text-slate-300">
+                      <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         Category
                       </th>
-                      <th className="px-6 py-4 text-xs text-right text-slate-300">
+                      <th className="px-6 py-3.5 text-right text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         Amount
                       </th>
-                      <th className="px-6 py-4 text-xs text-slate-300">
+                      <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         Date
                       </th>
-                      <th className="px-6 py-4 text-xs text-slate-300">
+                      <th className="px-6 py-3.5 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                         Note
                       </th>
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-glass-medium">
-                    {filteredExpenses.map((item, index) => (
+                  <tbody className="divide-y divide-white/[0.04]">
+                    {filteredExpenses.map((item) => (
                       <tr
                         key={item.id}
-                        className="hover:bg-glass-light transition"
+                        className="hover:bg-emerald-500/[0.03] transition-colors"
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center">
-                              <span className="text-sm font-bold text-white">
-                                {(item?.user_name || "U")
-                                  .charAt(0)
-                                  .toUpperCase()}
-                              </span>
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 font-bold text-white shadow-md shadow-emerald-500/20">
+                              {(item?.user_name || "U")
+                                .charAt(0)
+                                .toUpperCase()}
                             </div>
-                            <div>
-                              <p className="font-semibold text-white">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-white truncate">
                                 {item?.user_name || "Unknown user"}
                               </p>
-                              <p className="text-xs text-slate-400">
+                              <p className="text-xs text-slate-400 truncate">
                                 {item?.user_email || "-"}
                               </p>
                             </div>
@@ -150,20 +154,20 @@ export default function Expenses() {
                         </td>
 
                         <td className="px-6 py-4">
-                          <span className="inline-flex rounded-lg bg-glass-light px-3 py-1 text-xs text-slate-300">
+                          <span className="inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
                             {item?.category_name || "Uncategorized"}
                           </span>
                         </td>
 
-                        <td className="px-6 py-4 text-right font-bold text-gold-400">
+                        <td className="px-6 py-4 text-right font-black text-emerald-400 tracking-tight">
                           {formatCurrency(item?.amount || 0)}
                         </td>
 
-                        <td className="px-6 py-4 text-xs text-slate-400">
+                        <td className="px-6 py-4 text-xs font-medium text-slate-400">
                           {formatDate(item?.expense_date)}
                         </td>
 
-                        <td className="px-6 py-4 text-slate-400">
+                        <td className="px-6 py-4 text-xs font-medium text-slate-300">
                           {item?.note || "-"}
                         </td>
                       </tr>

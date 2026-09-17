@@ -25,12 +25,18 @@ const insertDefaultCategories = async (userId, categories) => {
 
 const getCategories = async (userId) => {
     const query = `
-        SELECT id, name, created_at
-        FROM categories
-        WHERE user_id = ?
-        ORDER BY created_at DESC
+        SELECT c.id, c.name, c.created_at, 
+               COUNT(e.id) AS expense_count, 
+               COALESCE(SUM(e.amount), 0) AS total_spent
+        FROM categories c
+        LEFT JOIN expenses e ON e.category_id = c.id AND e.user_id = ?
+        WHERE c.user_id = ? OR (c.user_id IS NULL AND NOT EXISTS (
+            SELECT 1 FROM categories c2 WHERE c2.user_id = ? AND c2.name = c.name
+        ))
+        GROUP BY c.id, c.name, c.created_at
+        ORDER BY c.created_at DESC
     `;
-    const [rows] = await db.query(query, [userId]);
+    const [rows] = await db.query(query, [userId, userId, userId]);
     return rows;
 };
 

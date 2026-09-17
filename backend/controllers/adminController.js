@@ -104,7 +104,7 @@ exports.getUserDetails = async (req, res) => {
     }
 
     const [budgetRows] = await db.query(
-      `SELECT month, monthly_limit, created_at, updated_at
+      `SELECT month, monthly_limit, created_at
        FROM budgets
        WHERE user_id = ?
        ORDER BY month DESC

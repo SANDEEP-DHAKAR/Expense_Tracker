@@ -5,6 +5,7 @@ import {
   FolderKanban,
   LogOut,
   Moon,
+  PiggyBank,
   ReceiptText,
   Sun,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import { ThemeContext } from "../context/ThemeContextValue";
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: ChartNoAxesCombined },
   { label: "Expenses", path: "/expenses", icon: ReceiptText },
+  { label: "Budgets", path: "/budgets", icon: PiggyBank },
   { label: "Categories", path: "/categories", icon: FolderKanban },
 ];
 
@@ -143,7 +145,7 @@ export default function MobileNavbar() {
       </div>
 
       {/* NAVIGATION */}
-      <nav className="mt-4 grid grid-cols-3 gap-2">
+      <nav className="mt-4 grid grid-cols-4 gap-2">
         {navItems.map((item) => {
           const Icon = item.icon;
 

@@ -51,10 +51,12 @@ const getDashboard = async (req, res) => {
                 category: item.category_name
             })),
 
-            // 📈 MONTHLY GRAPH
+            // 📈 MONTHLY GRAPH (WITH BUDGET & SAVINGS)
             monthly_graph: monthlyGraph.map(item => ({
                 month: item.month,
-                total: Number(item.total ?? 0)
+                total: Number(item.total ?? 0),
+                budget: Number(item.budget ?? 0),
+                savings: Number(item.savings ?? 0)
             })),
 
             // 💰 BUDGET + ALERT 🚨
@@ -80,7 +82,9 @@ const getMonthlyGraph = async (req, res) => {
             success: true,
             data: data.map(item => ({
                 month: item.month,
-                total: Number(item.total ?? 0)
+                total: Number(item.total ?? 0),
+                budget: Number(item.budget ?? 0),
+                savings: Number(item.savings ?? 0)
             }))
         });
 

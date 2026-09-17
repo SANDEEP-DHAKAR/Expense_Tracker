@@ -5,6 +5,7 @@ import {
   FolderKanban,
   LogOut,
   Moon,
+  PiggyBank,
   ReceiptText,
   Sun,
 } from "lucide-react";
@@ -22,6 +23,11 @@ const navItems = [
     label: "Expenses",
     path: "/expenses",
     icon: ReceiptText,
+  },
+  {
+    label: "Budgets",
+    path: "/budgets",
+    icon: PiggyBank,
   },
   {
     label: "Categories",

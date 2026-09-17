@@ -82,17 +82,41 @@ const getBudgetHistory = async (userId, page = 1, limit = 12) => {
     const offset = (pageNumber - 1) * pageSize;
 
     const [rows] = await db.query(
-        `SELECT month, monthly_limit, created_at, updated_at
-         FROM budgets
-         WHERE user_id = ?
-         ORDER BY month DESC
+        `SELECT 
+            all_months.month,
+            COALESCE(b.monthly_limit, 0) AS monthly_limit,
+            COALESCE(SUM(e.amount), 0) AS spent,
+            CASE 
+                WHEN COALESCE(b.monthly_limit, 0) > 0 
+                THEN (b.monthly_limit - COALESCE(SUM(e.amount), 0))
+                ELSE 0 
+            END AS savings,
+            CASE 
+                WHEN COALESCE(b.monthly_limit, 0) > 0 
+                THEN ROUND((COALESCE(SUM(e.amount), 0) / b.monthly_limit) * 100, 1)
+                ELSE 0 
+            END AS used_percentage,
+         b.created_at
+     FROM (
+        SELECT DISTINCT month FROM budgets WHERE user_id = ?
+        UNION
+        SELECT DISTINCT DATE_FORMAT(expense_date, '%Y-%m') AS month FROM expenses WHERE user_id = ?
+     ) all_months
+     LEFT JOIN budgets b ON b.month = all_months.month AND b.user_id = ?
+     LEFT JOIN expenses e ON DATE_FORMAT(e.expense_date, '%Y-%m') = all_months.month AND e.user_id = ?
+     GROUP BY all_months.month, b.monthly_limit, b.created_at
+     ORDER BY all_months.month DESC
          LIMIT ? OFFSET ?`,
-        [userId, pageSize, offset]
+        [userId, userId, userId, userId, pageSize, offset]
     );
 
     const [countRows] = await db.query(
-        `SELECT COUNT(*) AS total FROM budgets WHERE user_id = ?`,
-        [userId]
+        `SELECT COUNT(*) AS total FROM (
+            SELECT DISTINCT month FROM budgets WHERE user_id = ?
+            UNION
+            SELECT DISTINCT DATE_FORMAT(expense_date, '%Y-%m') AS month FROM expenses WHERE user_id = ?
+         ) t`,
+        [userId, userId]
     );
 
     return {

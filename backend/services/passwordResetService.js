@@ -7,6 +7,8 @@ const {
     markTokenAsUsed,
     revokeUserTokens
 } = require('../models/passwordResetModel');
+const { revokeAllUserRefreshTokens } = require('../models/tokenModel');
+const { sendPasswordResetEmail } = require('../utils/sendEmail');
 
 // Generate a random token
 const generateToken = () => {
@@ -22,22 +24,21 @@ const getResetLinkBaseUrl = (frontendOrigin) => {
     ).replace(/\/$/, '');
 };
 
-// ✅ FORGOT PASSWORD - Generate reset token
+// ✅ FORGOT PASSWORD - Generate reset token & send email or return link
 const forgotPassword = async (email, frontendOrigin) => {
-    // Find user by email
-    const user = await findUserByEmail(email);
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const user = await findUserByEmail(normalizedEmail);
 
     if (!user) {
-        // Don't reveal if user exists or not for security
-        return {
-            message: 'If an account exists with this email, a password reset link has been sent.'
-        };
+        const error = new Error('No user account found with this email address');
+        error.status = 404;
+        throw error;
     }
 
-    // Revoke any existing tokens for this user
+    // Revoke any existing active tokens for this user
     await revokeUserTokens(user.id);
 
-    // Generate token
+    // Generate fresh token
     const token = generateToken();
 
     // Token expires in 1 hour
@@ -46,26 +47,45 @@ const forgotPassword = async (email, frontendOrigin) => {
     // Save token to database
     await createResetToken(user.id, token, expiresAt);
 
-    // In a real application, you would send an email with the reset link
-    // For now, we'll return the token (for development/testing purposes)
-    // TODO: Implement email sending with nodemailer or similar service
-    
+    const resetLink = `${getResetLinkBaseUrl(frontendOrigin)}/reset-password?token=${token}`;
+
+    // Send email via nodemailer if SMTP is configured
+    const emailResult = await sendPasswordResetEmail({
+        to: user.email,
+        resetLink,
+        userName: user.name,
+    });
+
     return {
-        message: 'Password reset link generated successfully',
-        // In production, remove this token from response and send via email
+        success: true,
+        message: emailResult.sent
+            ? 'Password reset email sent to your inbox'
+            : 'Password reset link generated successfully',
         resetToken: token,
-        // This would be the email link in production
-        resetLink: `${getResetLinkBaseUrl(frontendOrigin)}/reset-password?token=${token}`
+        resetLink,
+        emailSent: emailResult.sent,
     };
 };
 
 // ✅ RESET PASSWORD - Validate token and update password
 const resetPassword = async (token, newPassword) => {
+    if (!token || typeof token !== 'string') {
+        const error = new Error('Reset token is required');
+        error.status = 400;
+        throw error;
+    }
+
+    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+        const error = new Error('Password must be at least 8 characters long');
+        error.status = 400;
+        throw error;
+    }
+
     // Find valid token
     const tokenRecord = await findResetToken(token);
 
     if (!tokenRecord) {
-        const error = new Error('Invalid or expired reset token');
+        const error = new Error('Invalid or expired reset link. Please request a new one.');
         error.status = 400;
         throw error;
     }
@@ -73,17 +93,18 @@ const resetPassword = async (token, newPassword) => {
     // Hash new password
     const hashedPassword = await hashPassword(newPassword);
 
-    // Update user password
+    // Update user password in database
     await updateUserPassword(tokenRecord.user_id, hashedPassword);
 
     // Mark token as used
     await markTokenAsUsed(token);
 
-    // Note: In production, you may want to revoke all refresh tokens for this user
-    // to force them to re-login after password reset
+    // Revoke all existing refresh tokens for security
+    await revokeAllUserRefreshTokens(tokenRecord.user_id);
 
     return {
-        message: 'Password reset successfully'
+        success: true,
+        message: 'Password reset successfully! You can now log in with your new password.',
     };
 };
 

@@ -16,7 +16,7 @@ function RootRedirect() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+      <div className="flex min-h-screen items-center justify-center bg-[#05080d] text-sm text-emerald-400">
         Loading...
       </div>
     );
@@ -25,13 +25,45 @@ function RootRedirect() {
   return <Navigate to={user?.accessToken ? "/dashboard" : "/login"} replace />;
 }
 
+function PublicOnlyRoute({ children }) {
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#05080d] text-sm text-emerald-400">
+        Loading...
+      </div>
+    );
+  }
+
+  if (user?.accessToken) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
+
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<RootRedirect />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/signup"
+          element={
+            <PublicOnlyRoute>
+              <Signup />
+            </PublicOnlyRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <PublicOnlyRoute>
+              <Login />
+            </PublicOnlyRoute>
+          }
+        />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route

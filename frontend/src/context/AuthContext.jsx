@@ -17,6 +17,24 @@ const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
+
+    const handleAuthRefreshed = (event) => {
+      if (event.detail) {
+        setUser(event.detail);
+      }
+    };
+
+    const handleAuthLogout = () => {
+      setUser(null);
+    };
+
+    window.addEventListener("auth-token-refreshed", handleAuthRefreshed);
+    window.addEventListener("auth-logout", handleAuthLogout);
+
+    return () => {
+      window.removeEventListener("auth-token-refreshed", handleAuthRefreshed);
+      window.removeEventListener("auth-logout", handleAuthLogout);
+    };
   }, []);
 
   const login = (data) => {

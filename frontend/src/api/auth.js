@@ -6,6 +6,9 @@ export const signupUser = (data) => api.post("/auth/signup", data);
 // 🔑 Login API
 export const loginUser = (data) => api.post("/auth/login", data);
 
+// 🌐 Google Auth API
+export const googleAuth = (data) => api.post("/auth/google", data);
+
 // 🔁 Refresh token
 export const refreshToken = (data) => api.post("/auth/refresh", data);
 

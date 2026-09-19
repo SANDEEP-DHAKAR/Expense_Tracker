@@ -1,8 +1,10 @@
+const crypto = require('crypto');
 const { createUser, findUserByEmail, findUserById } = require('../models/userModel');
 const { hashPassword, comparePassword } = require('../utils/hash');
 const { generateAccessToken, generateRefreshToken } = require('../utils/jwt');
 const { saveRefreshToken, findRefreshToken, revokeRefreshToken } = require('../models/tokenModel');
 const { createDefaultCategories } = require('./categoryService');
+const { verifyGoogleIdToken } = require('../utils/googleAuth');
 
 // ✅ SIGNUP (AUTO LOGIN)
 const signupUser = async (name, email, password) => {
@@ -32,7 +34,7 @@ const signupUser = async (name, email, password) => {
     const refreshToken = generateRefreshToken();
 
     const expiresAt = new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
+        Date.now() + 90 * 24 * 60 * 60 * 1000
     );
 
     await saveRefreshToken(userId, refreshToken, expiresAt);
@@ -66,7 +68,7 @@ const loginUser = async (email, password) => {
     const refreshToken = generateRefreshToken();
 
     const expiresAt = new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
+        Date.now() + 90 * 24 * 60 * 60 * 1000
     );
 
     await saveRefreshToken(user.id, refreshToken, expiresAt);
@@ -123,7 +125,7 @@ const refreshAuth = async (refreshToken) => {
     const newRefreshToken = generateRefreshToken();
 
     const expiresAt = new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
+        Date.now() + 90 * 24 * 60 * 60 * 1000
     );
 
     await saveRefreshToken(user.id, newRefreshToken, expiresAt);
@@ -156,9 +158,56 @@ const logoutUser = async (refreshToken) => {
     };
 };
 
+// ✅ GOOGLE AUTH (LOGIN OR AUTO-SIGNUP)
+const googleAuthService = async (idToken) => {
+    const googleUser = await verifyGoogleIdToken(idToken);
+    const { email, name } = googleUser;
+
+    let user = await findUserByEmail(email);
+
+    if (!user) {
+        // Auto-provision new user with secure random password
+        const randomPassword = crypto.randomBytes(32).toString('hex');
+        const hashedPassword = await hashPassword(randomPassword);
+
+        const result = await createUser(name, email, hashedPassword);
+        const userId = result.insertId;
+
+        await createDefaultCategories(userId);
+
+        user = {
+            id: userId,
+            name,
+            email,
+            role: "user",
+        };
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken();
+
+    const expiresAt = new Date(
+        Date.now() + 90 * 24 * 60 * 60 * 1000
+    );
+
+    await saveRefreshToken(user.id, refreshToken, expiresAt);
+
+    return {
+        accessToken,
+        refreshToken,
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role || "user",
+        },
+    };
+};
+
 module.exports = {
     signupUser,
     loginUser,
     refreshAuth,
-    logoutUser
+    logoutUser,
+    googleAuthService,
 };

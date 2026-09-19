@@ -2,7 +2,8 @@ const {
     signupUser,
     loginUser,
     refreshAuth,
-    logoutUser
+    logoutUser,
+    googleAuthService
 } = require("../services/authService");
 const {
     forgotPassword,
@@ -160,4 +161,42 @@ const resetPasswordController = async (req, res) => {
     }
 };
 
-module.exports = { signup, login, refresh, logout, forgotPasswordController, resetPasswordController };
+// ✅ GOOGLE AUTH
+const googleAuthController = async (req, res) => {
+    try {
+        const { idToken } = req.body;
+
+        if (!idToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Google idToken is required",
+            });
+        }
+
+        const data = await googleAuthService(idToken);
+
+        res.json({
+            success: true,
+            message: "Google authentication successful",
+            user: data.user,
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+        });
+
+    } catch (error) {
+        res.status(error.status || 500).json({
+            success: false,
+            message: error.message || "Google authentication failed",
+        });
+    }
+};
+
+module.exports = {
+    signup,
+    login,
+    refresh,
+    logout,
+    forgotPasswordController,
+    resetPasswordController,
+    googleAuthController,
+};

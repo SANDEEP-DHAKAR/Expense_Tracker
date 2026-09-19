@@ -19,7 +19,8 @@ const refreshApi = axios.create({
 api.interceptors.request.use((config) => {
     if (
         config.url.includes("/auth/login") ||
-        config.url.includes("/auth/signup")
+        config.url.includes("/auth/signup") ||
+        config.url.includes("/auth/google")
     ) {
         return config;
     }
@@ -38,6 +39,21 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// Single flight mutex & queue for concurrent token refresh
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach((prom) => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+    failedQueue = [];
+};
+
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -47,9 +63,23 @@ api.interceptors.response.use(
             error.response?.status === 401 &&
             originalRequest &&
             !originalRequest._retry &&
-            originalRequest.url !== "/auth/refresh"
+            !originalRequest.url?.includes("/auth/refresh") &&
+            !originalRequest.url?.includes("/auth/login")
         ) {
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                })
+                    .then((token) => {
+                        originalRequest.headers.Authorization = `Bearer ${token}`;
+                        return api(originalRequest);
+                    })
+                    .catch((err) => Promise.reject(err));
+            }
+
             originalRequest._retry = true;
+            isRefreshing = true;
+
             let storedUser = null;
             try {
                 storedUser = JSON.parse(localStorage.getItem("user") || "null");
@@ -59,7 +89,10 @@ api.interceptors.response.use(
             const refreshToken = storedUser?.refreshToken;
 
             if (!refreshToken) {
+                isRefreshing = false;
+                processQueue(error, null);
                 localStorage.removeItem("user");
+                window.dispatchEvent(new Event("auth-logout"));
                 return Promise.reject(error);
             }
 
@@ -77,11 +110,18 @@ api.interceptors.response.use(
                 };
 
                 localStorage.setItem("user", JSON.stringify(updatedAuth));
+                window.dispatchEvent(new CustomEvent("auth-token-refreshed", { detail: updatedAuth }));
+
                 originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+                processQueue(null, accessToken);
                 return api(originalRequest);
             } catch (refreshError) {
+                processQueue(refreshError, null);
                 localStorage.removeItem("user");
+                window.dispatchEvent(new Event("auth-logout"));
                 return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
 

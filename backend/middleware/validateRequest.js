@@ -50,6 +50,14 @@ const validateRefreshOrLogout = (req, res, next) => {
     return next();
 };
 
+const validateGoogleAuth = (req, res, next) => {
+    const { idToken } = req.body || {};
+    if (!idToken || typeof idToken !== "string") {
+        return badRequest(res, ["Google idToken is required"]);
+    }
+    return next();
+};
+
 const validateExpenseBody = (req, res, next) => {
     const { amount, expenseDate, note } = req.body || {};
     const errors = [];
@@ -103,6 +111,7 @@ module.exports = {
     validateSignup,
     validateLogin,
     validateRefreshOrLogout,
+    validateGoogleAuth,
     validateExpenseBody,
     validateCategoryBody,
     validateBudgetBody,

@@ -76,9 +76,9 @@ export default function Header() {
         </div>
 
         {/* RIGHT ACTIONS */}
-        <div className="relative flex flex-wrap items-center gap-3">
+        <div className="relative flex flex-nowrap items-center justify-end gap-2 sm:gap-3 ml-auto translate-x-1 sm:translate-x-2">
           {/* NOTIFICATION */}
-          <div className="relative" ref={notificationRef}>
+          <div className="relative shrink-0" ref={notificationRef}>
             <NotificationBell
               count={notificationsCount}
               onClick={() => setShowNotifications((current) => !current)}
@@ -100,23 +100,23 @@ export default function Header() {
             type="button"
             onClick={refresh}
             disabled={loading}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-emerald-200/70 bg-white/80 px-5 text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur transition-all duration-300 hover:scale-[1.02] hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-900/30 dark:bg-slate-900/70 dark:text-emerald-300 dark:hover:bg-slate-800"
+            className="inline-flex h-10 sm:h-12 items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl border border-emerald-200/70 bg-white/80 px-3 sm:px-5 text-xs sm:text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur transition-all duration-300 hover:scale-[1.02] hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-900/30 dark:bg-slate-900/70 dark:text-emerald-300 dark:hover:bg-slate-800 shrink-0 whitespace-nowrap"
           >
             <RefreshCcw
-              size={17}
-              className={loading ? "animate-spin" : ""}
+              size={16}
+              className={`shrink-0 ${loading ? "animate-spin" : ""}`}
             />
-            Refresh
+            <span>Refresh</span>
           </button>
 
           {/* ADD EXPENSE BUTTON (SCROLLS & FOCUSES FORM) */}
           <button
             type="button"
             onClick={scrollToAddExpense}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-700 px-5 text-sm font-semibold text-white shadow-xl shadow-emerald-500/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-emerald-500/30 active:scale-[0.98]"
+            className="inline-flex h-10 sm:h-12 items-center justify-center gap-1.5 sm:gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-green-700 px-3.5 sm:px-5 text-xs sm:text-sm font-semibold text-white shadow-xl shadow-emerald-500/20 transition-all duration-300 hover:scale-[1.03] hover:shadow-emerald-500/30 active:scale-[0.98] shrink-0 whitespace-nowrap"
           >
-            <Plus size={17} />
-            Add Expense
+            <Plus size={16} className="shrink-0" />
+            <span>Add Expense</span>
           </button>
         </div>
       </div>

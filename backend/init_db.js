@@ -15,7 +15,13 @@ async function initDatabase() {
 
     let connection;
     try {
-        connection = await mysql.createConnection(DATABASE_URL);
+        const connConfig = {
+            uri: DATABASE_URL,
+        };
+        if (DATABASE_URL.includes('tidbcloud.com') || DATABASE_URL.includes('ssl=') || process.env.DB_SSL === 'true') {
+            connConfig.ssl = { minVersion: 'TLSv1.2', rejectUnauthorized: true };
+        }
+        connection = await mysql.createConnection(connConfig);
         console.log('✅ Connected successfully to MySQL server!');
 
         const [tables] = await connection.query('SHOW TABLES');

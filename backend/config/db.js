@@ -12,12 +12,26 @@ if (!DATABASE_URL) {
 }
 
 // ✅ connection pool using DATABASE_URL from environment
-const db = mysql.createPool({
+const poolConfig = {
     uri: DATABASE_URL,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-}).promise();
+};
+
+if (
+    DATABASE_URL.includes('tidbcloud.com') ||
+    DATABASE_URL.includes('aivencloud.com') ||
+    DATABASE_URL.includes('ssl=') ||
+    process.env.DB_SSL === 'true'
+) {
+    poolConfig.ssl = {
+        minVersion: 'TLSv1.2',
+        rejectUnauthorized: true,
+    };
+}
+
+const db = mysql.createPool(poolConfig).promise();
 
 console.log('✅ Database connection pool initialized using DATABASE_URL');
 

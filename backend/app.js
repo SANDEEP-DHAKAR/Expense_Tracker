@@ -50,6 +50,20 @@ app.get("/", (req, res) => {
   res.send("Expense Tracker API is running");
 });
 
+app.get("/api", (req, res) => {
+  res.json({
+    success: true,
+    message: "Expense Tracker API is running",
+    endpoints: {
+      health: "/health",
+      testDb: "/test-db",
+      auth: "/api/auth",
+      expenses: "/api/expenses",
+      dashboard: "/api/dashboard",
+    },
+  });
+});
+
 app.get("/health", (req, res) => {
   res.json({
     success: true,

@@ -5,12 +5,9 @@
 -- Created for: Complete Platform Ledger, Governance & Auth System
 -- ==============================================================================
 
--- 1. DATABASE CREATION
-CREATE DATABASE IF NOT EXISTS `expense_tracker`
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_0900_ai_ci;
-
-USE `expense_tracker`;
+-- 1. DATABASE CREATION (Optional for fresh instances; TiDB Serverless uses current connected DB, e.g. `test`)
+-- CREATE DATABASE IF NOT EXISTS `expense_tracker` CHARACTER SET utf8mb4;
+-- USE `expense_tracker`;
 
 -- Disable foreign key checks during schema creation / migration
 SET FOREIGN_KEY_CHECKS = 0;

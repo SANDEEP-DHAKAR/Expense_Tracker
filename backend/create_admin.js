@@ -1,23 +1,31 @@
 require('dotenv').config();
-const mysql = require('mysql2/promise');
 const bcrypt = require('bcrypt');
+const db = require('./config/db');
 
-const { DATABASE_URL } = process.env;
-
-async function test() {
+async function createAdmin() {
     try {
-        if (!DATABASE_URL) {
-            throw new Error('DATABASE_URL missing in environment variables');
-        }
+        const adminEmail = process.env.ADMIN_EMAIL || 'sandeep@gmail.com';
+        const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123';
+        const adminName = process.env.ADMIN_NAME || 'Admin Sandeep';
 
-        const db = await mysql.createConnection(DATABASE_URL);
+        console.log(`🔐 Creating/updating superadmin account for: ${adminEmail}`);
+
         const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash('Admin12345', salt);
-        await db.query("INSERT INTO users (name, email, password, role) VALUES ('Admin Sandeep', 'sandeep@gmail.com', ?, 'admin') ON DUPLICATE KEY UPDATE password = ?, role = 'admin'", [hash, hash]);
-        console.log("Admin user created or updated");
-        await db.end();
+        const hash = await bcrypt.hash(adminPassword, salt);
+
+        await db.query(
+            "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'admin') ON DUPLICATE KEY UPDATE password = ?, role = 'admin', name = ?",
+            [adminName, adminEmail, hash, hash, adminName]
+        );
+
+        console.log(`✅ Superadmin configured successfully in TiDB Cloud!`);
+        console.log(`   Email: ${adminEmail}`);
+        console.log(`   Password: ${adminPassword}`);
+        process.exit(0);
     } catch (e) {
-        console.error(e);
+        console.error('❌ Failed to configure admin:', e);
+        process.exit(1);
     }
 }
-test();
+
+createAdmin();

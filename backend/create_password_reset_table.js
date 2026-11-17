@@ -1,14 +1,8 @@
-const mysql = require('mysql2/promise');
 require('dotenv').config();
-
-const { DATABASE_URL } = process.env;
+const db = require('./config/db');
 
 async function createPasswordResetTable() {
-    let connection;
     try {
-        connection = await mysql.createConnection(DATABASE_URL);
-        console.log('✅ Connected to database');
-
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS password_reset_tokens (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -20,19 +14,15 @@ async function createPasswordResetTable() {
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 INDEX idx_token (token),
                 INDEX idx_user_id (user_id)
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         `;
 
-        await connection.query(createTableQuery);
-        console.log('✅ password_reset_tokens table created successfully');
-
+        await db.query(createTableQuery);
+        console.log('✅ password_reset_tokens table verified in TiDB Cloud');
+        process.exit(0);
     } catch (error) {
         console.error('❌ Error creating table:', error.message);
-    } finally {
-        if (connection) {
-            await connection.end();
-            console.log('🔒 Database connection closed');
-        }
+        process.exit(1);
     }
 }
 
